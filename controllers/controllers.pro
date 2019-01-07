@@ -15,3 +15,5 @@ include(../appbase.pri)
 
 HEADERS += applicationcontroller.h
 SOURCES += applicationcontroller.cpp
+HEADERS += blogcontroller.h
+SOURCES += blogcontroller.cpp
