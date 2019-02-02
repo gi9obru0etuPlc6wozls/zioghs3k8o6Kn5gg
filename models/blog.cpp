@@ -225,33 +225,35 @@ QDomElement Blog::getAllXml(QDomDocument &dom, const QString &prefix)
     return ret;
 }
 
-void Blog::toXml(QDomDocument &dom, QDomElement &ret, const QString &prefix) const {
-    static QVector<QString> variableNames;
-
-    static const TModelObject *md = nullptr;
-    static const QMetaObject *metaObj;
-
-    if (!md) {
-        md = modelData();
-        metaObj = md->metaObject();
-
-        variableNames.fill("***", metaObj->propertyCount());
+QVector<QString> *Blog::variableNames(const QString &prefix) const
+{
+    static QVector<QString> *pointer;
+    if (!pointer) {
+        pointer = new QVector<QString>;
+        const QMetaObject *metaObj = modelData()->metaObject();
+        pointer->fill(nullptr, modelData()->metaObject()->propertyCount());
         for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
             QString n(metaObj->property(i).name());
 
             if (!n.isEmpty()) {
-                variableNames[i] = prefix + fieldNameToVariableName(n);
+                (*pointer)[i] = prefix + fieldNameToVariableName(n);
             }
         }
     }
+    return pointer;
+}
 
-    ret.setAttribute("lockRevision", 3);
+void Blog::toXml(QDomDocument &dom, QDomElement &ret, const QString &prefix) const {
+    QVector<QString> *varNames = variableNames(prefix);
+
+    const TModelObject *md = modelData();
+    const QMetaObject *metaObj = md->metaObject();
 
     for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
         const char *propName = metaObj->property(i).name();
         QString n(propName);
         if (!n.isEmpty()) {
-            QDomElement tag = dom.createElement(variableNames[i]);
+            QDomElement tag = dom.createElement((*varNames)[i]);
             ret.appendChild(tag);
 
             QDomText text = dom.createTextNode(md->property(propName).toString());
@@ -261,39 +263,8 @@ void Blog::toXml(QDomDocument &dom, QDomElement &ret, const QString &prefix) con
 }
 
 QDomElement Blog::toXml(QDomDocument &dom, const QString &prefix) const {
-    static QVector<QString> variableNames;
-
-    static const TModelObject *md = nullptr;
-    static const QMetaObject *metaObj;
-
-    if (!md) {
-        md = modelData();
-        metaObj = md->metaObject();
-
-        variableNames.fill("***", metaObj->propertyCount());
-        for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
-            QString n(metaObj->property(i).name());
-
-            if (!n.isEmpty()) {
-                variableNames[i] = prefix + fieldNameToVariableName(n);
-            }
-        }
-    }
-
     QDomElement ret = dom.createElement(prefix + "Blog");
-    ret.setAttribute("lockRevision", 3);
-
-    for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
-        const char *propName = metaObj->property(i).name();
-        QString n(propName);
-        if (!n.isEmpty()) {
-            QDomElement tag = dom.createElement(variableNames[i]);
-            ret.appendChild(tag);
-
-            QDomText text = dom.createTextNode(md->property(propName).toString());
-            tag.appendChild(text);
-        }
-    }
+    Blog::toXml(dom, ret, prefix);
     return ret;
 }
 

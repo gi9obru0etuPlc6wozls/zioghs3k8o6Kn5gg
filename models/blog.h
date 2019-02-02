@@ -68,6 +68,8 @@ private:
     const TModelObject *modelData() const override;
     friend QDataStream &operator<<(QDataStream &ds, const Blog &model);
     friend QDataStream &operator>>(QDataStream &ds, Blog &model);
+
+    QVector<QString> *variableNames(const QString &prefix) const;
 };
 
 Q_DECLARE_METATYPE(Blog)

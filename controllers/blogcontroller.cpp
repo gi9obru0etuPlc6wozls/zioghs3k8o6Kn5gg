@@ -88,7 +88,7 @@ void BlogController::xml(const QString &id)
     envelope.appendChild(body);
     doc.appendChild(envelope);
 
-    std::cerr <<  "doc: " <<  doc.toString(4).toStdString()  << std::endl;
+    //std::cerr <<  "doc: " <<  doc.toString(4).toStdString()  << std::endl;
 
     renderXml(doc);
 }
