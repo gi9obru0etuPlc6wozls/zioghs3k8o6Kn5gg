@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<%#include "onetwo.h" %>
+<% tfetch(OneTwo, oneTwo); %>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title><%= controller()->name() + ": " + controller()->activeAction() %></title>
+</head>
+<body>
+<p style="color: red"><%=$ error %></p>
+<p style="color: green"><%=$ notice %></p>
+
+<h1>Showing One Two</h1>
+<dt>First Last</dt><dd><%= oneTwo.firstLast() %></dd><br />
+<dt>Field A</dt><dd><%= oneTwo.fieldA() %></dd><br />
+<dt>Filed 1</dt><dd><%= oneTwo.filed1() %></dd><br />
+
+<%== linkTo("Edit", urla("save", oneTwo.firstLast())) %> |
+<%== linkTo("Back", urla("index")) %>
+
+</body>
+</html>

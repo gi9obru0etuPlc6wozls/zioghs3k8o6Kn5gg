@@ -1,4 +1,5 @@
 #include <TreeFrogModel>
+#include <QtXml/QDomDocument>
 #include "blog.h"
 #include "blogobject.h"
 
@@ -6,6 +7,10 @@ Blog::Blog()
     : TAbstractModel(), d(new BlogObject())
 {
     d->id = 0;
+    d->col_integer = 0;
+    d->col_float = 0;
+    d->col_double = 0;
+    d->col_numeric = 0;
     d->lock_revision = 0;
 }
 
@@ -48,14 +53,74 @@ void Blog::setBody(const QString &body)
     d->body = body;
 }
 
+QString Blog::colString() const
+{
+    return d->col_string;
+}
+
+void Blog::setColString(const QString &colString)
+{
+    d->col_string = colString;
+}
+
+int Blog::colInteger() const
+{
+    return d->col_integer;
+}
+
+void Blog::setColInteger(int colInteger)
+{
+    d->col_integer = colInteger;
+}
+
+double Blog::colFloat() const
+{
+    return d->col_float;
+}
+
+void Blog::setColFloat(double colFloat)
+{
+    d->col_float = colFloat;
+}
+
+double Blog::colDouble() const
+{
+    return d->col_double;
+}
+
+void Blog::setColDouble(double colDouble)
+{
+    d->col_double = colDouble;
+}
+
+double Blog::colNumeric() const
+{
+    return d->col_numeric;
+}
+
+void Blog::setColNumeric(double colNumeric)
+{
+    d->col_numeric = colNumeric;
+}
+
 QDateTime Blog::createdAt() const
 {
     return d->created_at;
 }
 
+void Blog::setCreatedAt(const QDateTime &createdAt)
+{
+    d->created_at = createdAt;
+}
+
 QDateTime Blog::updatedAt() const
 {
     return d->updated_at;
+}
+
+void Blog::setUpdatedAt(const QDateTime &updatedAt)
+{
+    d->updated_at = updatedAt;
 }
 
 int Blog::lockRevision() const
@@ -69,11 +134,18 @@ Blog &Blog::operator=(const Blog &other)
     return *this;
 }
 
-Blog Blog::create(const QString &title, const QString &body)
+Blog Blog::create(const QString &title, const QString &body, const QString &colString, int colInteger, double colFloat, double colDouble, double colNumeric, const QDateTime &createdAt, const QDateTime &updatedAt)
 {
     BlogObject obj;
     obj.title = title;
     obj.body = body;
+    obj.col_string = colString;
+    obj.col_integer = colInteger;
+    obj.col_float = colFloat;
+    obj.col_double = colDouble;
+    obj.col_numeric = colNumeric;
+    obj.created_at = createdAt;
+    obj.updated_at = updatedAt;
     if (!obj.create()) {
         return Blog();
     }
@@ -127,6 +199,102 @@ QJsonArray Blog::getAllJson()
         }
     }
     return array;
+}
+
+void Blog::getAllXml(QDomDocument &dom, QDomElement &element, const QString &prefix)
+{
+    TSqlORMapper<BlogObject> mapper;
+
+    if (mapper.find() > 0) {
+        for (TSqlORMapperIterator<BlogObject> i(mapper); i.hasNext(); ) {
+            element.appendChild(Blog(i.next()).toXml(dom,prefix));
+        }
+    }
+}
+
+QDomElement Blog::getAllXml(QDomDocument &dom, const QString &prefix)
+{
+    QDomElement ret = dom.createElement(prefix + "ArrayOfBlog");
+    TSqlORMapper<BlogObject> mapper;
+
+    if (mapper.find() > 0) {
+        for (TSqlORMapperIterator<BlogObject> i(mapper); i.hasNext(); ) {
+            ret.appendChild(Blog(i.next()).toXml(dom,prefix));
+        }
+    }
+    return ret;
+}
+
+void Blog::toXml(QDomDocument &dom, QDomElement &ret, const QString &prefix) const {
+    static QVector<QString> variableNames;
+
+    static const TModelObject *md = nullptr;
+    static const QMetaObject *metaObj;
+
+    if (!md) {
+        md = modelData();
+        metaObj = md->metaObject();
+
+        variableNames.fill("***", metaObj->propertyCount());
+        for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
+            QString n(metaObj->property(i).name());
+
+            if (!n.isEmpty()) {
+                variableNames[i] = prefix + fieldNameToVariableName(n);
+            }
+        }
+    }
+
+    ret.setAttribute("lockRevision", 3);
+
+    for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
+        const char *propName = metaObj->property(i).name();
+        QString n(propName);
+        if (!n.isEmpty()) {
+            QDomElement tag = dom.createElement(variableNames[i]);
+            ret.appendChild(tag);
+
+            QDomText text = dom.createTextNode(md->property(propName).toString());
+            tag.appendChild(text);
+        }
+    }
+}
+
+QDomElement Blog::toXml(QDomDocument &dom, const QString &prefix) const {
+    static QVector<QString> variableNames;
+
+    static const TModelObject *md = nullptr;
+    static const QMetaObject *metaObj;
+
+    if (!md) {
+        md = modelData();
+        metaObj = md->metaObject();
+
+        variableNames.fill("***", metaObj->propertyCount());
+        for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
+            QString n(metaObj->property(i).name());
+
+            if (!n.isEmpty()) {
+                variableNames[i] = prefix + fieldNameToVariableName(n);
+            }
+        }
+    }
+
+    QDomElement ret = dom.createElement(prefix + "Blog");
+    ret.setAttribute("lockRevision", 3);
+
+    for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
+        const char *propName = metaObj->property(i).name();
+        QString n(propName);
+        if (!n.isEmpty()) {
+            QDomElement tag = dom.createElement(variableNames[i]);
+            ret.appendChild(tag);
+
+            QDomText text = dom.createTextNode(md->property(propName).toString());
+            tag.appendChild(text);
+        }
+    }
+    return ret;
 }
 
 TModelObject *Blog::modelData()

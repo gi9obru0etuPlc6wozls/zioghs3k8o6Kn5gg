@@ -15,3 +15,6 @@ include(../appbase.pri)
 HEADERS += sqlobjects/blogobject.h
 HEADERS += blog.h
 SOURCES += blog.cpp
+HEADERS += sqlobjects/onetwoobject.h
+HEADERS += onetwo.h
+SOURCES += onetwo.cpp

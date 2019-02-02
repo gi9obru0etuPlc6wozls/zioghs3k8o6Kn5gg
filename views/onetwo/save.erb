@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<%#include "onetwo.h" %>
+<% tfetch(QVariantMap, oneTwo); %>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title><%= controller()->name() + ": " + controller()->activeAction() %></title>
+</head>
+<body>
+<p style="color: red"><%=$ error %></p>
+<p style="color: green"><%=$ notice %></p>
+
+<h1>Editing One Two</h1>
+
+<%== formTag(urla("save", oneTwo["firstLast"]), Tf::Post) %>
+  <p>
+    <label>First Last<br /><input type="text" name="oneTwo[firstLast]" value="<%= oneTwo["firstLast"] %>" readonly="readonly" /></label>
+  </p>
+  <p>
+    <label>Field A<br /><input type="text" name="oneTwo[fieldA]" value="<%= oneTwo["fieldA"] %>" /></label>
+  </p>
+  <p>
+    <label>Filed 1<br /><input type="text" name="oneTwo[filed1]" value="<%= oneTwo["filed1"] %>" /></label>
+  </p>
+  <p>
+    <input type="submit" value="Save" />
+  </p>
+</form>
+
+<%== linkTo("Show", urla("show", oneTwo["firstLast"])) %> |
+<%== linkTo("Back", urla("index")) %>
+</body>
+</html>

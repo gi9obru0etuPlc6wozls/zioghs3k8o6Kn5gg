@@ -1,5 +1,9 @@
+#include <iostream>
+#include <QXmlInputSource>
+#include <QMapIterator>
 #include "blogcontroller.h"
 #include "blog.h"
+#include "SoapXmlHandler.h"
 
 
 void BlogController::index()
@@ -14,6 +18,79 @@ void BlogController::show(const QString &id)
     auto blog = Blog::get(id.toInt());
     texport(blog);
     render();
+}
+
+void BlogController::xmlCreate(const QString &id)
+{
+    QString message = "Created successfully.";
+
+    if (httpRequest().method() != Tf::Post || httpRequest().header().contentType() != "text/xml") {
+        message = "Bad request";
+    }
+
+    auto *source = new QXmlInputSource(httpRequest().rawBody());
+    auto *handler = new SoapXmlHandler("Blog");
+    QXmlSimpleReader reader;
+    reader.setContentHandler(handler);
+    if (!reader.parse(source)) {
+        message = "XML parse error.";
+    }
+
+    auto items = handler->itemMap();
+    auto model = Blog::create(items);
+
+    if (model.isNull()) {
+        message = "Failed to create.";
+    }
+
+    /*
+     * - response
+     */
+
+    setContentType("text/xml");
+    setStatusCode(200);
+
+    QDomDocument doc;
+
+    QDomElement envelope = doc.createElementNS("http://schemas.xmlsoap.org/soap/envelope/", "Envelope");
+    envelope.setPrefix("soap");
+
+    QDomElement body = doc.createElement("soap:Body");
+
+    QDomElement response = doc.createElementNS("http://framesquared.com/Blog", "m:GetBlogResponse");
+    model.toXml(doc, response, "m:");
+
+    body.appendChild(response);
+    envelope.appendChild(body);
+    doc.appendChild(envelope);
+
+    std::cerr <<  "doc: " <<  doc.toString(4).toStdString()  << std::endl;
+
+    renderXml(doc);
+}
+
+void BlogController::xml(const QString &id)
+{
+    setContentType("text/xml");
+    setStatusCode(200);
+
+    QDomDocument doc;
+
+    QDomElement envelope = doc.createElementNS("http://schemas.xmlsoap.org/soap/envelope/", "Envelope");
+    envelope.setPrefix("soap");
+
+    QDomElement body = doc.createElement("soap:Body");
+
+    QDomElement response = doc.createElementNS("http://framesquared.com/Blog", "m:GetBlogResponse");
+    Blog::getAllXml(doc, response, "m:");
+
+    body.appendChild(response);
+    envelope.appendChild(body);
+    doc.appendChild(envelope);
+
+    std::cerr <<  "doc: " <<  doc.toString(4).toStdString()  << std::endl;
+
+    renderXml(doc);
 }
 
 void BlogController::create()
@@ -62,7 +139,7 @@ void BlogController::save(const QString &id)
         QString error;
         int rev = session().value("blog_lockRevision").toInt();
         auto model = Blog::get(id.toInt(), rev);
-        
+
         if (model.isNull()) {
             error = "Original data not found. It may have been updated/removed by another transaction.";
             tflash(error);
@@ -71,6 +148,7 @@ void BlogController::save(const QString &id)
         }
 
         auto blog = httpRequest().formItems("blog");
+
         model.setProperties(blog);
         if (model.save()) {
             QString notice = "Updated successfully.";

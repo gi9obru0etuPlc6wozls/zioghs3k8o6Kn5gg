@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<%#include "onetwo.h" %>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title><%= controller()->name() + ": " + controller()->activeAction() %></title>
+</head>
+<body>
+
+<h1>Listing One Two</h1>
+
+<%== linkTo("Create a new One Two", urla("create")) %><br />
+<br />
+<table border="1" cellpadding="5" style="border: 1px #d0d0d0 solid; border-collapse: collapse;">
+  <tr>
+    <th>First Last</th>
+    <th>Field A</th>
+    <th>Filed 1</th>
+  </tr>
+<% tfetch(QList<OneTwo>, oneTwoList); %>
+<% for (const auto &i : oneTwoList) { %>
+  <tr>
+    <td><%= i.firstLast() %></td>
+    <td><%= i.fieldA() %></td>
+    <td><%= i.filed1() %></td>
+    <td>
+      <%== linkTo("Show", urla("show", i.firstLast())) %>
+      <%== linkTo("Edit", urla("save", i.firstLast())) %>
+      <%== linkTo("Remove", urla("remove", i.firstLast()), Tf::Post, "confirm('Are you sure?')") %>
+    </td>
+  </tr>
+<% } %>
+</table>
+
+</body>
+</html>
