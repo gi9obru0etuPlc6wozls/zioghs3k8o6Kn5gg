@@ -232,6 +232,7 @@ QVector<QString> *Blog::variableNames(const QString &prefix) const
         pointer = new QVector<QString>;
         const QMetaObject *metaObj = modelData()->metaObject();
         pointer->fill(nullptr, modelData()->metaObject()->propertyCount());
+        
         for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
             QString n(metaObj->property(i).name());
 
