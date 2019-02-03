@@ -56,8 +56,10 @@ public:
     static QList<Blog> getAll();
     static QList<Blog> getAll(const int limit,const int offset);
     static QJsonArray getAllJson();
+
+    QString soapPrefix();
     static void getAllXml(QDomDocument &dom, QDomElement &element, const QString &prefix = "");
-    static QDomElement getAllXml(QDomDocument &dom, const QString &prefix = "");
+    static QDomDocumentFragment getAllXml(QDomDocument &dom, const QString &prefix = "");
     QDomElement toXml(QDomDocument &dom, const QString &prefix) const;
     void toXml(QDomDocument &dom, QDomElement &element, const QString &prefix) const;
 

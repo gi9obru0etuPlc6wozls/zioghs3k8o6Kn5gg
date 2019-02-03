@@ -11,6 +11,14 @@
 
 class SoapXmlHandler : public QXmlDefaultHandler {
 public:
+    enum ElementState {
+        None = 0,
+        Envelope,
+        Body,
+        Request,
+        Payload
+    };
+
     SoapXmlHandler() {}
 
     explicit SoapXmlHandler(const QString &objectName) {
@@ -30,6 +38,33 @@ public:
     }
 
     bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) override {
+        std::cerr << std::endl;
+
+        switch (elementState) {
+            case None:
+                std::cerr << "None: " << qName.toStdString() << std::endl;
+                if (qName != "soap:Envelope")
+                    return false;
+                elementState = Envelope;
+                break;
+            case Envelope:
+                std::cerr << "Envelope: " << qName.toStdString() << std::endl;
+                if (qName != "soap:Body")
+                    return false;
+                elementState = Body;
+                break;
+            case Body:
+                std::cerr << "Body: " << qName.toStdString() << std::endl;
+                requestName = qName;
+                elementState = Request;
+                break;
+            case Request:
+                std::cerr << "Request: " << qName.toStdString() << std::endl;
+                break;
+            default:
+                return false;
+        }
+
         if (!inObject) {
             if (this->objectName == qName) {
                 inObject = true;
@@ -66,6 +101,8 @@ public:
 
 
 private:
+    ElementState elementState = None;
+    QString requestName;
     QString objectName;
     bool inObject = false;
     bool inElement = false;

@@ -29,7 +29,7 @@ void BlogController::xmlCreate(const QString &id)
     }
 
     auto *source = new QXmlInputSource(httpRequest().rawBody());
-    auto *handler = new SoapXmlHandler("Blog");
+    auto *handler = new SoapXmlHandler("Blog");  // QXmlDefaultHandler
     QXmlSimpleReader reader;
     reader.setContentHandler(handler);
     if (!reader.parse(source)) {
@@ -57,8 +57,8 @@ void BlogController::xmlCreate(const QString &id)
 
     QDomElement body = doc.createElement("soap:Body");
 
-    QDomElement response = doc.createElementNS("http://framesquared.com/Blog", "m:GetBlogResponse");
-    model.toXml(doc, response, "m:");
+    QDomElement response = doc.createElementNS("http://framesquared.com/Blog", "blog:GetBlogResponse");
+    model.toXml(doc, response, "blog:");
 
     body.appendChild(response);
     envelope.appendChild(body);
@@ -71,6 +71,8 @@ void BlogController::xmlCreate(const QString &id)
 
 void BlogController::xml(const QString &id)
 {
+    std::cerr <<  "BlogController::xml(const QString &id): " << std::endl;
+
     setContentType("text/xml");
     setStatusCode(200);
 
@@ -81,14 +83,15 @@ void BlogController::xml(const QString &id)
 
     QDomElement body = doc.createElement("soap:Body");
 
-    QDomElement response = doc.createElementNS("http://framesquared.com/Blog", "m:GetBlogResponse");
-    Blog::getAllXml(doc, response, "m:");
+    QDomDocumentFragment frag = Blog::getAllXml(doc, "blog:");
+    QDomElement response = doc.createElementNS("http://framesquared.com/Blog", "blog:GetBlogResponse");
 
+    response.appendChild(frag);
     body.appendChild(response);
     envelope.appendChild(body);
     doc.appendChild(envelope);
 
-    //std::cerr <<  "doc: " <<  doc.toString(4).toStdString()  << std::endl;
+    std::cerr <<  "doc: " <<  doc.toString(4).toStdString()  << std::endl;
 
     renderXml(doc);
 }

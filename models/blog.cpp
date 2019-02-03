@@ -188,6 +188,14 @@ QList<Blog> Blog::getAll()
     return tfGetModelListByCriteria<Blog, BlogObject>(TCriteria());
 }
 
+QString Blog::soapPrefix()
+{
+    static QString soapPrefix;
+    if (soapPrefix.isEmpty())
+        soapPrefix = fieldNameToVariableName(d->tableName());
+    return soapPrefix;
+}
+
 QJsonArray Blog::getAllJson()
 {
     QJsonArray array;
@@ -212,9 +220,9 @@ void Blog::getAllXml(QDomDocument &dom, QDomElement &element, const QString &pre
     }
 }
 
-QDomElement Blog::getAllXml(QDomDocument &dom, const QString &prefix)
+QDomDocumentFragment Blog::getAllXml(QDomDocument &dom, const QString &prefix)
 {
-    QDomElement ret = dom.createElement(prefix + "ArrayOfBlog");
+    QDomDocumentFragment ret = dom.createDocumentFragment();
     TSqlORMapper<BlogObject> mapper;
 
     if (mapper.find() > 0) {
@@ -232,7 +240,7 @@ QVector<QString> *Blog::variableNames(const QString &prefix) const
         pointer = new QVector<QString>;
         const QMetaObject *metaObj = modelData()->metaObject();
         pointer->fill(nullptr, modelData()->metaObject()->propertyCount());
-        
+
         for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
             QString n(metaObj->property(i).name());
 
