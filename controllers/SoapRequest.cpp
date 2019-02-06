@@ -103,14 +103,19 @@ bool SoapRequest::readObject() {
     std::cerr << "SoapRequest::readObject: " << xmlReader.name().toString().toStdString() << std::endl;
 
     while (xmlReader.readNextStartElement()) {
-        std::cerr << "attribute: " << xmlReader.name().toString().toStdString() << std::endl;
         QString key =  xmlReader.name().toString();
         QString value = xmlReader.readElementText();
 
         std::cerr << "Key: " << key.toStdString() << " Value: " << value.toStdString() << std::endl;
 
+        items.insert(xmlReader.name().toString(), QVariant(value));
+
     }
     return !xmlReader.error();
+}
+
+QVariantMap SoapRequest::getItems() {
+    return items;
 }
 
 

@@ -8,6 +8,9 @@
 
 #include <QtCore/QIODevice>
 #include <QtCore/QXmlStreamReader>
+#include <QtCore/QMap>
+#include <QtCore/QVariant>
+#include <QtCore/QVariantMap>
 
 class SoapRequest {
 public:
@@ -19,6 +22,8 @@ public:
     QString getSoapMethod();
     bool processRequest();
 
+    QVariantMap getItems();
+
 private:
     QIODevice *qioDevice;
     QXmlStreamReader xmlReader;
@@ -26,11 +31,12 @@ private:
     bool readDocument();
     bool readEnvelope();
     bool readBody();
+    bool readObject();
 
     QString soapMethod;
     QString errorString;
 
-    bool readObject();
+    QVariantMap items;
 };
 
 

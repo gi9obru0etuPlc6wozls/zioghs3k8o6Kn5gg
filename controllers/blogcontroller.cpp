@@ -3,7 +3,6 @@
 #include <QMapIterator>
 #include "blogcontroller.h"
 #include "blog.h"
-#include "SoapXmlHandler.h"
 #include "SoapRequest.h"
 
 
@@ -34,7 +33,16 @@ void BlogController::xmlCreate()
     QString s = sr.getSoapMethod();
     std::cerr <<  "sr.getSoapMethod: " << s.toStdString() << std::endl;
 
-    sr.processRequest();
+    if (sr.processRequest()) {
+        auto model = Blog::create(sr.getItems());
+
+        if (model.isNull()) {
+            std::cerr <<  "Failed to create record." << std::endl;
+        }
+    }
+    else {
+        std::cerr <<  "SOAP XML Parse error." << std::endl;
+    }
 
 
     // Dummy response.
