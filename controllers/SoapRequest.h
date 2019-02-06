@@ -6,8 +6,31 @@
 #define APPNAME_SOAPREQUEST_H
 
 
-class SoapRequest {
+#include <QtCore/QIODevice>
+#include <QtCore/QXmlStreamReader>
 
+class SoapRequest {
+public:
+
+    SoapRequest();
+    SoapRequest(QIODevice *qioDevice);
+
+    void setDevice(QIODevice *qioDevice);
+    QString getSoapMethod();
+    bool processRequest();
+
+private:
+    QIODevice *qioDevice;
+    QXmlStreamReader xmlReader;
+
+    bool readDocument();
+    bool readEnvelope();
+    bool readBody();
+
+    QString soapMethod;
+    QString errorString;
+
+    bool readObject();
 };
 
 
