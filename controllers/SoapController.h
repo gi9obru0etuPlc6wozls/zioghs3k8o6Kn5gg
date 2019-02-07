@@ -2,8 +2,8 @@
 // Created by jwc on 2/4/19.
 //
 
-#ifndef APPNAME_SOAPREQUEST_H
-#define APPNAME_SOAPREQUEST_H
+#ifndef APPNAME_SOAPCONTROLLER_H
+#define APPNAME_SOAPCONTROLLER_H
 
 
 #include <QtCore/QIODevice>
@@ -12,10 +12,10 @@
 #include <QtCore/QVariant>
 #include <QtCore/QVariantMap>
 
-class SoapRequest {
+class SoapController {
 public:
 
-    SoapRequest();
+    SoapController();
 
     bool initRequest(THttpRequest *tHttpRequest);
     bool processRequest();
@@ -41,4 +41,4 @@ private:
 };
 
 
-#endif //APPNAME_SOAPREQUEST_H
+#endif //APPNAME_SOAPCONTROLLER_H

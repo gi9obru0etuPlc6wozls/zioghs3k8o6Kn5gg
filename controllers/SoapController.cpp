@@ -4,23 +4,23 @@
 
 #include <iostream>
 #include <THttpRequest>
-#include "SoapRequest.h"
+#include "SoapController.h"
 
-SoapRequest::SoapRequest() {}
+SoapController::SoapController() {}
 
-QString SoapRequest::getSoapMethod() {
-    std::cerr <<  "SoapRequest::getSoapMethod: " << std::endl;
+QString SoapController::getSoapMethod() {
+    std::cerr <<  "SoapController::getSoapMethod: " << std::endl;
     return soapMethod;
 }
 
-QString SoapRequest::getErrorMessage() {
-    std::cerr <<  "SoapRequest::getErrorMessage: " << std::endl;
+QString SoapController::getErrorMessage() {
+    std::cerr <<  "SoapController::getErrorMessage: " << std::endl;
     return errorString;
 }
 
 
-bool SoapRequest::initRequest(THttpRequest *tHttpRequest) {
-    std::cerr <<  "SoapRequest::initRequest: " << std::endl;
+bool SoapController::initRequest(THttpRequest *tHttpRequest) {
+    std::cerr <<  "SoapController::initRequest: " << std::endl;
 
     if (tHttpRequest->method() != Tf::Post || tHttpRequest->header().contentType() != "text/xml") {
         errorString = "Method/contentType error";
@@ -38,8 +38,8 @@ bool SoapRequest::initRequest(THttpRequest *tHttpRequest) {
     return readDocument();
 }
 
-bool SoapRequest::readDocument() {
-    std::cerr <<  "SoapRequest::readDocument: " << std::endl;
+bool SoapController::readDocument() {
+    std::cerr <<  "SoapController::readDocument: " << std::endl;
 
     if (xmlReader.readNextStartElement()) {
         std::cerr << "readNextStartElement: " << xmlReader.name().toString().toStdString() << std::endl;
@@ -54,8 +54,8 @@ bool SoapRequest::readDocument() {
     return !xmlReader.error();
 }
 
-bool SoapRequest::readEnvelope() {
-    std::cerr <<  "SoapRequest::readEnvelope: " << std::endl;
+bool SoapController::readEnvelope() {
+    std::cerr <<  "SoapController::readEnvelope: " << std::endl;
 
     while (xmlReader.readNextStartElement()) {
         std::cerr << "readNextStartElement: " << xmlReader.name().toString().toStdString() << std::endl;
@@ -74,8 +74,8 @@ bool SoapRequest::readEnvelope() {
     return !xmlReader.error();
 }
 
-bool SoapRequest::readBody() {
-    std::cerr << "SoapRequest::readBody: " << std::endl;
+bool SoapController::readBody() {
+    std::cerr << "SoapController::readBody: " << std::endl;
 
     if (xmlReader.readNextStartElement()) {
         std::cerr << "readNextStartElement: " << xmlReader.name().toString().toStdString() << std::endl;
@@ -88,8 +88,8 @@ bool SoapRequest::readBody() {
 /*
  * Request body
  */
-bool SoapRequest::processRequest() {
-    std::cerr << "SoapRequest::processRequest: " << std::endl;
+bool SoapController::processRequest() {
+    std::cerr << "SoapController::processRequest: " << std::endl;
 
     if (xmlReader.isStartElement()) {
         std::cerr << "isStartElement: " << std::endl;
@@ -108,8 +108,8 @@ bool SoapRequest::processRequest() {
     return !xmlReader.error();
 }
 
-bool SoapRequest::readObject() {
-    std::cerr << "SoapRequest::readObject: " << xmlReader.name().toString().toStdString() << std::endl;
+bool SoapController::readObject() {
+    std::cerr << "SoapController::readObject: " << xmlReader.name().toString().toStdString() << std::endl;
 
     while (xmlReader.readNextStartElement()) {
         QString key =  xmlReader.name().toString();
@@ -123,6 +123,6 @@ bool SoapRequest::readObject() {
     return !xmlReader.error();
 }
 
-QVariantMap SoapRequest::getItems() {
+QVariantMap SoapController::getItems() {
     return items;
 }

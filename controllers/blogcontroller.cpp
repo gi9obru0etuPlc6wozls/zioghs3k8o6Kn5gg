@@ -3,7 +3,7 @@
 #include <QMapIterator>
 #include "blogcontroller.h"
 #include "blog.h"
-#include "SoapRequest.h"
+#include "SoapController.h"
 
 
 void BlogController::index()
@@ -24,11 +24,12 @@ void BlogController::xmlCreate()
 {
     std::cerr <<  "BlogController::xmlCreate: " << std::endl;
 
-    SoapRequest sr;
+    SoapController sr;
     if (!sr.initRequest(&httpRequest())) {
         renderText(sr.getErrorMessage());
         return;
     }
+
 
     QString soapMethod = sr.getSoapMethod();
     std::cerr <<  "sr.getSoapMethod: " << soapMethod.toStdString() << std::endl;
@@ -59,7 +60,7 @@ void BlogController::xmlGet(const QString &id)
 {
     std::cerr <<  "BlogController::xmlGet" << std::endl;
 
-    SoapRequest sr;
+    SoapController sr;
     if (!sr.initRequest(&httpRequest())) {
         std::cerr <<  "sr.getErrorMessage: " <<  sr.getErrorMessage().toStdString() << std::endl;
         renderText("SOAP Error:" + sr.getErrorMessage());
