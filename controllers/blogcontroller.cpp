@@ -24,14 +24,18 @@ void BlogController::xmlCreate()
 {
     std::cerr <<  "BlogController::xmlCreate: " << std::endl;
 
-    if (httpRequest().method() != Tf::Post || httpRequest().header().contentType() != "text/xml") {
-        std::cerr <<  "Method/contentType error" << std::endl;
+    SoapRequest sr;
+    if (!sr.initRequest(&httpRequest())) {
+        renderText(sr.getErrorMessage());
         return;
     }
 
-    SoapRequest sr(httpRequest().rawBody());
-    QString s = sr.getSoapMethod();
-    std::cerr <<  "sr.getSoapMethod: " << s.toStdString() << std::endl;
+    QString soapMethod = sr.getSoapMethod();
+    std::cerr <<  "sr.getSoapMethod: " << soapMethod.toStdString() << std::endl;
+
+    if (soapMethod != "CreateBlog") {
+        std::cerr <<  "SOAP method invalid" << std::endl;
+    }
 
     if (sr.processRequest()) {
         auto model = Blog::create(sr.getItems());
@@ -44,37 +48,53 @@ void BlogController::xmlCreate()
         std::cerr <<  "SOAP XML Parse error." << std::endl;
     }
 
-
     // Dummy response.
     QDomDocument doc;
-    QDomElement response = doc.createElementNS("http://localhost/Blog", "blog:GetBlogResponse");
+    QDomElement response = doc.createElementNS("http://localhost/Blog", "blog:CreateBlogResponse");
     doc.appendChild(response);
     renderXml(doc);
 }
 
-void BlogController::xml(const QString &id)
+void BlogController::xmlGet(const QString &id)
 {
-    std::cerr <<  "BlogController::xml(const QString &id): " << std::endl;
+    std::cerr <<  "BlogController::xmlGet" << std::endl;
+
+    SoapRequest sr;
+    if (!sr.initRequest(&httpRequest())) {
+        std::cerr <<  "sr.getErrorMessage: " <<  sr.getErrorMessage().toStdString() << std::endl;
+        renderText("SOAP Error:" + sr.getErrorMessage());
+        return;
+    }
+
+    QString soapMethod = sr.getSoapMethod();
+    std::cerr <<  "sr.getSoapMethod: " << soapMethod.toStdString() << std::endl;
+
+    if (soapMethod != "GetBlog") {
+        renderText("Invalid SOAP method:" + soapMethod);
+        return;
+    }
+
+    /*
+     *
+     */
 
     setContentType("text/xml");
     setStatusCode(200);
 
     QDomDocument doc;
-
     QDomElement envelope = doc.createElementNS("http://schemas.xmlsoap.org/soap/envelope/", "Envelope");
     envelope.setPrefix("soap");
-
     QDomElement body = doc.createElement("soap:Body");
-
-    QDomDocumentFragment frag = Blog::getAllXml(doc, "blog:");
     QDomElement response = doc.createElementNS("http://localhost/Blog", "blog:GetBlogResponse");
 
-    response.appendChild(frag);
     body.appendChild(response);
     envelope.appendChild(body);
     doc.appendChild(envelope);
 
-    std::cerr <<  "doc: " <<  doc.toString(4).toStdString()  << std::endl;
+    QDomDocumentFragment frag = Blog::getAllXml(doc);
+    response.appendChild(frag);
+
+    //std::cerr <<  "doc: " <<  doc.toString(4).toStdString()  << std::endl;
 
     renderXml(doc);
 }

@@ -16,15 +16,16 @@ class SoapRequest {
 public:
 
     SoapRequest();
-    SoapRequest(QIODevice *qioDevice);
 
-    void setDevice(QIODevice *qioDevice);
-    QString getSoapMethod();
+    bool initRequest(THttpRequest *tHttpRequest);
     bool processRequest();
 
+    QString getSoapMethod();
+    QString getErrorMessage();
     QVariantMap getItems();
 
 private:
+    THttpRequest *tHttpRequest;
     QIODevice *qioDevice;
     QXmlStreamReader xmlReader;
 

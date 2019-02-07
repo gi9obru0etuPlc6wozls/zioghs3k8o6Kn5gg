@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <GetBlog xmlns="http://framesquared.com/Blog">
+            <Blog>
+                <id>Blog-1</id>
+                <title>aaa</title>
+                <body>aaa</body>
+                <colString>aaa</colString>
+                <colInteger>111</colInteger>
+                <colFloat>111</colFloat>
+                <colDouble>111</colDouble>
+                <colNumeric>111</colNumeric>
+                <createAt></createAt>
+                <updateAt></updateAt>
+                <lockRevision>0</lockRevision>
+            </Blog>
+        </GetBlog>
+    </soap:Body>
+</soap:Envelope>

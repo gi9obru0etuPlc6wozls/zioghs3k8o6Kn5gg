@@ -188,12 +188,26 @@ QList<Blog> Blog::getAll()
     return tfGetModelListByCriteria<Blog, BlogObject>(TCriteria());
 }
 
-QString Blog::soapPrefix()
+QString *Blog::tableNameToVariableName() const
 {
-    static QString soapPrefix;
-    if (soapPrefix.isEmpty())
-        soapPrefix = fieldNameToVariableName(d->tableName());
-    return soapPrefix;
+    static QString *pointer;
+    if (!pointer) {
+        pointer = new QString(fieldNameToVariableName(d->tableName()));
+    }
+    return pointer;
+}
+
+QString *Blog::tableNameToObjectName() const
+{
+    static QString *pointer;
+    if (!pointer) {
+        pointer = new QString(fieldNameToVariableName(d->tableName()));
+    }
+
+    if (!pointer->isEmpty()) {
+        (*pointer)[0] = (*pointer)[0].toUpper();
+    }
+    return pointer;
 }
 
 QJsonArray Blog::getAllJson()
@@ -209,31 +223,20 @@ QJsonArray Blog::getAllJson()
     return array;
 }
 
-void Blog::getAllXml(QDomDocument &dom, QDomElement &element, const QString &prefix)
-{
-    TSqlORMapper<BlogObject> mapper;
-
-    if (mapper.find() > 0) {
-        for (TSqlORMapperIterator<BlogObject> i(mapper); i.hasNext(); ) {
-            element.appendChild(Blog(i.next()).toXml(dom,prefix));
-        }
-    }
-}
-
-QDomDocumentFragment Blog::getAllXml(QDomDocument &dom, const QString &prefix)
+QDomDocumentFragment Blog::getAllXml(QDomDocument &dom)
 {
     QDomDocumentFragment ret = dom.createDocumentFragment();
     TSqlORMapper<BlogObject> mapper;
 
     if (mapper.find() > 0) {
         for (TSqlORMapperIterator<BlogObject> i(mapper); i.hasNext(); ) {
-            ret.appendChild(Blog(i.next()).toXml(dom,prefix));
+            ret.appendChild(Blog(i.next()).toXml(dom));
         }
     }
     return ret;
 }
 
-QVector<QString> *Blog::variableNames(const QString &prefix) const
+QVector<QString> *Blog::variableNames() const
 {
     static QVector<QString> *pointer;
     if (!pointer) {
@@ -245,15 +248,16 @@ QVector<QString> *Blog::variableNames(const QString &prefix) const
             QString n(metaObj->property(i).name());
 
             if (!n.isEmpty()) {
-                (*pointer)[i] = prefix + fieldNameToVariableName(n);
+                (*pointer)[i] = *tableNameToVariableName() + ":" + fieldNameToVariableName(n);
             }
         }
     }
     return pointer;
 }
 
-void Blog::toXml(QDomDocument &dom, QDomElement &ret, const QString &prefix) const {
-    QVector<QString> *varNames = variableNames(prefix);
+QDomElement Blog::toXml(QDomDocument &dom) const {
+    QDomElement ret = dom.createElement(*tableNameToVariableName() +':'+ *tableNameToObjectName());
+    QVector<QString> *varNames = variableNames();
 
     const TModelObject *md = modelData();
     const QMetaObject *metaObj = md->metaObject();
@@ -269,11 +273,6 @@ void Blog::toXml(QDomDocument &dom, QDomElement &ret, const QString &prefix) con
             tag.appendChild(text);
         }
     }
-}
-
-QDomElement Blog::toXml(QDomDocument &dom, const QString &prefix) const {
-    QDomElement ret = dom.createElement(prefix + "Blog");
-    Blog::toXml(dom, ret, prefix);
     return ret;
 }
 

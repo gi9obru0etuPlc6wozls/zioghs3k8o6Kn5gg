@@ -14,7 +14,7 @@ public:
 public slots:
     void index();
     void show(const QString &id);
-    void xml(const QString &id);
+    void xmlGet(const QString &id);
     void xmlCreate();
     void create();
     void save(const QString &id);

@@ -57,11 +57,8 @@ public:
     static QList<Blog> getAll(const int limit,const int offset);
     static QJsonArray getAllJson();
 
-    QString soapPrefix();
-    static void getAllXml(QDomDocument &dom, QDomElement &element, const QString &prefix = "");
-    static QDomDocumentFragment getAllXml(QDomDocument &dom, const QString &prefix = "");
-    QDomElement toXml(QDomDocument &dom, const QString &prefix) const;
-    void toXml(QDomDocument &dom, QDomElement &element, const QString &prefix) const;
+    static QDomDocumentFragment getAllXml(QDomDocument &dom);
+    QDomElement toXml(QDomDocument &dom) const;
 
 private:
     QSharedDataPointer<BlogObject> d;
@@ -71,7 +68,10 @@ private:
     friend QDataStream &operator<<(QDataStream &ds, const Blog &model);
     friend QDataStream &operator>>(QDataStream &ds, Blog &model);
 
-    QVector<QString> *variableNames(const QString &prefix) const;
+    QVector<QString> *variableNames() const;
+
+    QString *tableNameToVariableName() const;
+    QString *tableNameToObjectName() const;
 };
 
 Q_DECLARE_METATYPE(Blog)

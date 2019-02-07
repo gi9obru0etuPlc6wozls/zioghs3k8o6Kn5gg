@@ -3,37 +3,42 @@
 //
 
 #include <iostream>
+#include <THttpRequest>
 #include "SoapRequest.h"
 
 SoapRequest::SoapRequest() {}
 
-SoapRequest::SoapRequest(QIODevice *qioDevice) {
-    this->setDevice(qioDevice);
-}
-
-void SoapRequest::setDevice(QIODevice *qioDevice) {
-    this->qioDevice = qioDevice;
-    if (!this->qioDevice->isOpen()) {
-        this->qioDevice->open(QIODevice::ReadOnly);
-    }
-    xmlReader.setDevice(qioDevice);
-}
-
 QString SoapRequest::getSoapMethod() {
-
     std::cerr <<  "SoapRequest::getSoapMethod: " << std::endl;
+    return soapMethod;
+}
 
-    if (readDocument())
-        return soapMethod;
+QString SoapRequest::getErrorMessage() {
+    std::cerr <<  "SoapRequest::getErrorMessage: " << std::endl;
+    return errorString;
+}
 
-    errorString = xmlReader.errorString();
-    return "";
+
+bool SoapRequest::initRequest(THttpRequest *tHttpRequest) {
+    std::cerr <<  "SoapRequest::initRequest: " << std::endl;
+
+    if (tHttpRequest->method() != Tf::Post || tHttpRequest->header().contentType() != "text/xml") {
+        errorString = "Method/contentType error";
+        return false;
+    }
+
+    qioDevice = tHttpRequest->rawBody();
+
+    if (!qioDevice->isOpen()) {
+        qioDevice->open(QIODevice::ReadOnly);
+    }
+
+    xmlReader.setDevice(qioDevice);
+
+    return readDocument();
 }
 
 bool SoapRequest::readDocument() {
-    QString errorMsg = "";
-    QString s;
-
     std::cerr <<  "SoapRequest::readDocument: " << std::endl;
 
     if (xmlReader.readNextStartElement()) {
@@ -42,6 +47,7 @@ bool SoapRequest::readDocument() {
             return readEnvelope();
         }
         else {
+            std::cerr << "SOAP Envelope not found." << std::endl;
             xmlReader.raiseError(QObject::tr("SOAP Envelope not found."));
         }
     }
@@ -49,6 +55,7 @@ bool SoapRequest::readDocument() {
 }
 
 bool SoapRequest::readEnvelope() {
+    std::cerr <<  "SoapRequest::readEnvelope: " << std::endl;
 
     while (xmlReader.readNextStartElement()) {
         std::cerr << "readNextStartElement: " << xmlReader.name().toString().toStdString() << std::endl;
@@ -59,6 +66,7 @@ bool SoapRequest::readEnvelope() {
             return readBody();
         }
         else {
+            std::cerr << "Unexpected element in SOAP Envelope." << std::endl;
             xmlReader.raiseError(QObject::tr("Unexpected element in SOAP Envelope."));
         }
 
@@ -77,8 +85,9 @@ bool SoapRequest::readBody() {
 }
 
 
-
-
+/*
+ * Request body
+ */
 bool SoapRequest::processRequest() {
     std::cerr << "SoapRequest::processRequest: " << std::endl;
 
@@ -88,7 +97,7 @@ bool SoapRequest::processRequest() {
 
     while (xmlReader.readNextStartElement()) {
         std::cerr << "readNextStartElement: " << xmlReader.name().toString().toStdString() << std::endl;
-        if (xmlReader.name() == "Blog") {
+        if (xmlReader.name() == "Blog") {    // TODO: make generic
             return readObject();
         }
         else {
@@ -117,5 +126,3 @@ bool SoapRequest::readObject() {
 QVariantMap SoapRequest::getItems() {
     return items;
 }
-
-
