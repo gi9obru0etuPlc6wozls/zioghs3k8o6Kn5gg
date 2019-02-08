@@ -31,13 +31,13 @@ private:
 
     bool readDocument();
     bool readEnvelope();
-    bool readBody();
-    bool readObject();
+    bool readMethod();
+    QVariant readRequest();
 
     QString soapMethod;
     QString errorString;
 
-    QVariantMap items;
+    QVariantMap *items;
 };
 
 
