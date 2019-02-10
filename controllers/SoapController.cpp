@@ -85,61 +85,102 @@ bool SoapController::readMethod() {
     if (xmlReader.error()) return !xmlReader.error();
 
 
-    readRequest();
+
+    tDebug("Token: %s Name: %s Text: %s ",
+           xmlReader.tokenString().toStdString().c_str(),
+           xmlReader.name().toString().toStdString().c_str(),
+           xmlReader.text().toString().toStdString().c_str()
+    );
+
+
+    XMLMap x;
+    readRequest(x);
+//    std::cerr << "x: " << x.toString().toStdString() << std::endl;
+
+    dumpMap(QVariant(x));
+
+//    QMap<QString, QVariant> map = x.toMap();
+//
+//    for (QMap<QString, QVariant>::iterator i = map.begin(); i != map.end(); ++i) {
+//        tDebug("1. Key: %s", i.key().toStdString().c_str());
+//
+//        QMap<QString, QVariant> map1 = i->toMap();
+//        for (QMap<QString, QVariant>::iterator j = map1.begin(); j != map1.end(); ++j) {
+//            tDebug("2. Key: %s", j.key().toStdString().c_str());
+//        }
+//    }
 
 }
 
-struct {
-    QString name;
-    QString text;
+QVariant SoapController::dumpMap(QVariant x) {
+    QMap<QString, QVariant> map = x.toMap();
+
+    for (QMap<QString, QVariant>::iterator i = map.begin(); i != map.end(); ++i) {
+        tDebug("Key: %s", i.key().toStdString().c_str());
+
+        QVariant y = i.value();
+        tDebug("y: %s", y.toString().toStdString().c_str());
+        dumpMap(y);
+    }
+
+}
 
 
-};
-
-QVariant SoapController::readRequest() {
+QVariant SoapController::readRequest(XMLMap &xmlMap) {
     std::cerr << "SoapController::readRequest: " << std::endl;
+    tDebug("---");
 
-    QVariantMap map;
+    bool inElement = false;
+
+
+    QString name = xmlReader.name().toString();
     QString text;
-    QXmlStreamReader::TokenType token;
-
-
 
     while (!xmlReader.atEnd()) {
-        token = xmlReader.readNext();
+        auto token = xmlReader.readNext();
 
         tDebug("Token: %s Name: %s Text: %s ",
-              xmlReader.tokenString().toStdString().c_str(),
-             xmlReader.name().toString().toStdString().c_str(),
-              xmlReader.text().toString().toStdString().c_str()
+                xmlReader.tokenString().toStdString().c_str(),
+                xmlReader.name().toString().toStdString().c_str(),
+                xmlReader.text().toString().toStdString().c_str()
         );
 
         switch (token) {
-            case QXmlStreamReader::StartElement:
-                text = xmlReader.readElementText();
-                tDebug("Text: %s", text.toStdString().c_str());
+            case QXmlStreamReader::TokenType::Characters:
+                tDebug("+QXmlStreamReader::TokenType::Characters");
+                text = xmlReader.text().toString();
                 break;
+            case QXmlStreamReader::TokenType::StartElement:
+                tDebug("+QXmlStreamReader::TokenType::StartElement: %s", xmlReader.name().toString().toStdString().c_str());
+                inElement = true;
+                xmlMap.insertMulti(xmlReader.name().toString(), readRequest());
 
-            case QXmlStreamReader::Characters:
-                text = xmlReader.text().toString().trimmed();
-                if (text.isEmpty()) {
-                    tDebug("Skipping");
-                    continue;
+                break;
+            case QXmlStreamReader::TokenType::EndElement:
+                tDebug("+QXmlStreamReader::TokenType::EndElement: %s", xmlReader.name().toString().toStdString().c_str());
+//                if (xmlReader.name().toString() != parentName) {
+//                    tDebug("Element name mismatch");
+//                }
+
+                if (inElement) {
+                    tDebug("inElement: True");
+                    //return QVariant(xmlMap);
+                    return xmlMap;
                 }
+
+                tDebug("inElement: False");
+                return text;
                 break;
-
+            default:
+                xmlReader.raiseError("SOAP XML Error");
+                std::cerr << "SOAP XML Error " << std::endl;
+                break;
         }
-
-//        std::cerr << "Token: " << xmlReader.tokenString().toStdString()
-//        << " Name: " << xmlReader.name().toString().toStdString()
-//        << " Text: " << xmlReader.text().toString().toStdString()
-//        << std::endl;
-
     }
-
+    tDebug("***RETURN***");
 
     std::cerr << "return! " << std::endl;
-    return map;
+    return xmlMap;
 }
 
 
