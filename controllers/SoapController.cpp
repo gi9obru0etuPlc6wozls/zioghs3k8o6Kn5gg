@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <THttpRequest>
+#include <QtCore/QUuid>
 #include "SoapController.h"
 
 SoapController::SoapController() {}
@@ -84,144 +85,85 @@ bool SoapController::readMethod() {
 
     if (xmlReader.error()) return !xmlReader.error();
 
-
-
     tDebug("Token: %s Name: %s Text: %s ",
            xmlReader.tokenString().toStdString().c_str(),
            xmlReader.name().toString().toStdString().c_str(),
            xmlReader.text().toString().toStdString().c_str()
     );
 
+    QVariant x = readRequest();
 
-    XMLMap x;
-    readRequest(x);
-//    std::cerr << "x: " << x.toString().toStdString() << std::endl;
+    tDebug("------ dumpMap Start");
+    dumpMap(x);
 
-    dumpMap(QVariant(x));
-
-//    QMap<QString, QVariant> map = x.toMap();
-//
-//    for (QMap<QString, QVariant>::iterator i = map.begin(); i != map.end(); ++i) {
-//        tDebug("1. Key: %s", i.key().toStdString().c_str());
-//
-//        QMap<QString, QVariant> map1 = i->toMap();
-//        for (QMap<QString, QVariant>::iterator j = map1.begin(); j != map1.end(); ++j) {
-//            tDebug("2. Key: %s", j.key().toStdString().c_str());
-//        }
-//    }
+    tDebug("------ dumpMap End");
 
 }
 
-QVariant SoapController::dumpMap(QVariant x) {
-    QMap<QString, QVariant> map = x.toMap();
+QVariant SoapController::dumpMap(QVariant qVariant) {
+    tDebug("--- SoapController::dumpMap");
 
-    for (QMap<QString, QVariant>::iterator i = map.begin(); i != map.end(); ++i) {
-        tDebug("Key: %s", i.key().toStdString().c_str());
+    if (qVariant.canConvert(QMetaType::QVariantMap)) {
+        tDebug("QMetaType::QVariantMap");
 
-        QVariant y = i.value();
-        tDebug("y: %s", y.toString().toStdString().c_str());
-        dumpMap(y);
+        XMLMap xmlMap = qVariant.toMap();
+
+        for (QMap<QString, QVariant>::iterator xmlMap_it = xmlMap.begin(); xmlMap_it != xmlMap.end(); ++xmlMap_it) {
+            tDebug("Key: %s ", xmlMap_it.key().toStdString().c_str());
+
+            dumpMap(xmlMap_it.value());
+        }
+    } else if (qVariant.canConvert(QMetaType::QString)) {
+        tDebug("QMetaType::QString");
+        tDebug("value: %s", qVariant.toString().toStdString().c_str());
+    } else {
+        tDebug("Error in QMetaType");
     }
 
 }
 
 
-QVariant SoapController::readRequest(XMLMap &xmlMap) {
-    std::cerr << "SoapController::readRequest: " << std::endl;
-    tDebug("---");
+QVariant SoapController::readRequest() {
+    tDebug("--- SoapController::readRequest:");
 
     bool inElement = false;
 
 
     QString name = xmlReader.name().toString();
     QString text;
+    XMLMap xmlMap;
 
     while (!xmlReader.atEnd()) {
         auto token = xmlReader.readNext();
 
-        tDebug("Token: %s Name: %s Text: %s ",
-                xmlReader.tokenString().toStdString().c_str(),
-                xmlReader.name().toString().toStdString().c_str(),
-                xmlReader.text().toString().toStdString().c_str()
-        );
-
         switch (token) {
             case QXmlStreamReader::TokenType::Characters:
-                tDebug("+QXmlStreamReader::TokenType::Characters");
                 text = xmlReader.text().toString();
+                tDebug("+QXmlStreamReader::TokenType::Characters: %s", text.toStdString().c_str());
                 break;
+
             case QXmlStreamReader::TokenType::StartElement:
                 tDebug("+QXmlStreamReader::TokenType::StartElement: %s", xmlReader.name().toString().toStdString().c_str());
                 inElement = true;
-                xmlMap.insertMulti(xmlReader.name().toString(), readRequest());
-
+                xmlMap.insert(xmlReader.name().toString(), readRequest());
                 break;
+
             case QXmlStreamReader::TokenType::EndElement:
                 tDebug("+QXmlStreamReader::TokenType::EndElement: %s", xmlReader.name().toString().toStdString().c_str());
-//                if (xmlReader.name().toString() != parentName) {
-//                    tDebug("Element name mismatch");
-//                }
 
                 if (inElement) {
-                    tDebug("inElement: True");
-                    //return QVariant(xmlMap);
-                    return xmlMap;
+                    return QVariant(xmlMap);
                 }
 
-                tDebug("inElement: False");
-                return text;
-                break;
+                return QVariant(text);
             default:
                 xmlReader.raiseError("SOAP XML Error");
                 std::cerr << "SOAP XML Error " << std::endl;
                 break;
         }
     }
+
     tDebug("***RETURN***");
-
-    std::cerr << "return! " << std::endl;
-    return xmlMap;
+    std::cerr << "***RETURN***" << std::endl;
+    return QVariant();
 }
-
-
-/*
- * Request body
- */
-//bool SoapController::processRequest() {
-//    std::cerr << "SoapController::processRequest: " << std::endl;
-//
-//    if (xmlReader.isStartElement()) {
-//        std::cerr << "isStartElement: " << std::endl;
-//    }
-//
-//    while (xmlReader.readNextStartElement()) {
-//        std::cerr << "readNextStartElement: " << xmlReader.name().toString().toStdString() << std::endl;
-//        if (xmlReader.name() == "Blog") {    // TODO: make generic
-//            return readObject();
-//        }
-//        else {
-//            xmlReader.raiseError(QObject::tr("Unexpected object."));
-//        }
-//
-//    }
-//    return !xmlReader.error();
-//}
-
-//bool SoapController::readObject() {
-//    std::cerr << "SoapController::readObject: " << xmlReader.name().toString().toStdString() << std::endl;
-//
-//    while (xmlReader.readNextStartElement()) {
-//        QString key =  xmlReader.name().toString();
-//        QString value = xmlReader.readElementText();
-//
-//        std::cerr << "Key: " << key.toStdString() << " Value: " << value.toStdString() << std::endl;
-//
-//        items.insert(xmlReader.name().toString(), QVariant(value));
-//
-//    }
-//    return !xmlReader.error();
-//}
-//
-//QVariantMap SoapController::getItems() {
-//    return items;
-//}

@@ -12,7 +12,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/QVariantMap>
 
-typedef QMap<QString, QVariant> XMLMap;
+typedef QMultiMap<QString, QVariant> XMLMap;
 
 class SoapController {
 public:
@@ -34,7 +34,7 @@ private:
     bool readDocument();
     bool readEnvelope();
     bool readMethod();
-    QVariant readRequest(XMLMap &xmlMap);
+    QVariant readRequest();
 
     QString soapMethod;
     QString errorString;
