@@ -11,37 +11,41 @@
 #include <QtCore/QMap>
 #include <QtCore/QVariant>
 #include <QtCore/QVariantMap>
+#include "applicationcontroller.h"
 
-typedef QMultiMap<QString, QVariant> XMLMap;
+typedef QMultiMap<QString, QVariant> SoapMap;
 
-class SoapController {
+class T_CONTROLLER_EXPORT SoapController : public ApplicationController {
+    Q_OBJECT
 public:
 
     SoapController();
 
-    bool initRequest(THttpRequest *tHttpRequest);
-    bool processRequest();
+    QXmlStreamReader::Error soapRequest();
+    void soapResponse(const QDomDocumentFragment &frag);
+    QVariantMap soapParameters();
 
     QString getSoapMethod();
-    QString getErrorMessage();
-    QVariantMap getItems();
+    QString errorMessage();
+    QXmlStreamReader::Error error();
+
+    QVariant dumpMap(QVariant x);
+
+protected:
+    QDomDocument doc;
 
 private:
-    THttpRequest *tHttpRequest;
     QIODevice *qioDevice;
     QXmlStreamReader xmlReader;
 
-    bool readDocument();
-    bool readEnvelope();
-    bool readMethod();
+    QXmlStreamReader::Error readDocument();
+    QXmlStreamReader::Error readEnvelope();
+    QXmlStreamReader::Error readMethod();
     QVariant readRequest();
 
     QString soapMethod;
-    QString errorString;
 
-    QVariantMap *items;
-
-    QVariant dumpMap(QVariant x);
+    QVariantMap items; // TODO: optimize?
 };
 
 

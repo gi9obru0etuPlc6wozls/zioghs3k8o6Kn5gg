@@ -2,14 +2,15 @@
 #define BLOGCONTROLLER_H
 
 #include "applicationcontroller.h"
+#include "SoapController.h"
 #include <QDomDocument>
 
 
-class T_CONTROLLER_EXPORT BlogController : public ApplicationController
+class T_CONTROLLER_EXPORT BlogController : public SoapController
 {
     Q_OBJECT
 public:
-    BlogController() : ApplicationController() {}
+    BlogController() : SoapController() {}
 
 public slots:
     void index();
