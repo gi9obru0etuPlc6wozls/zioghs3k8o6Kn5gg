@@ -29,7 +29,7 @@ public:
     QString errorMessage();
     QXmlStreamReader::Error error();
 
-    QVariant dumpMap(QVariant x);
+    void dumpMap(QVariant x);
 
 protected:
     QDomDocument doc;

@@ -170,7 +170,7 @@ QVariant SoapController::readRequest() {
     return QVariant();
 }
 
-QVariant SoapController::dumpMap(QVariant qVariant) {
+void SoapController::dumpMap(QVariant qVariant) {
     tDebug("--- SoapController::dumpMap");
 
     if (qVariant.canConvert(QMetaType::QVariantMap)) {
