@@ -28,7 +28,7 @@ QVariantMap SoapController::soapParameters() {
 }
 
 QXmlStreamReader::Error SoapController::soapRequest() {
-    std::cerr << "SoapController::soapRequest: " << std::endl;
+    tDebug("SoapController::soapRequest");
 
     if (httpRequest().method() != Tf::Post || httpRequest().header().contentType() != "text/xml") {
         tDebug("Method/contentType error");
@@ -67,7 +67,6 @@ void SoapController::soapResponse(const QDomDocumentFragment &frag) {
 
 QXmlStreamReader::Error SoapController::readDocument() {
     tDebug("SoapController::readDocument");
-    std::cerr <<  "SoapController::readDocument: " << std::endl;
 
     if (xmlReader.readNextStartElement()) {
         std::cerr << "readNextStartElement: " << xmlReader.name().toString().toStdString() << std::endl;
@@ -84,7 +83,6 @@ QXmlStreamReader::Error SoapController::readDocument() {
 
 QXmlStreamReader::Error SoapController::readEnvelope() {
     tDebug("SoapController::readEnvelope");
-    std::cerr <<  "SoapController::readEnvelope: " << std::endl;
 
     while (xmlReader.readNextStartElement()) {
         std::cerr << "readNextStartElement: " << xmlReader.name().toString().toStdString() << std::endl;
@@ -106,7 +104,6 @@ QXmlStreamReader::Error SoapController::readEnvelope() {
 
 QXmlStreamReader::Error SoapController::readMethod() {
     tDebug("SoapController::readMethod");
-    std::cerr << "SoapController::readMethod: " << std::endl;
 
     if (xmlReader.readNextStartElement()) {
         std::cerr << "readNextStartElement: " << xmlReader.name().toString().toStdString() << std::endl;
@@ -131,7 +128,7 @@ QVariant SoapController::readRequest() {
 
     bool inElement = false;
 
-    QString name = xmlReader.name().toString();
+    const QString name = xmlReader.name().toString();
     QString text;
     SoapMap xmlMap;
 
@@ -141,33 +138,33 @@ QVariant SoapController::readRequest() {
         switch (token) {
             case QXmlStreamReader::TokenType::Characters:
                 text = xmlReader.text().toString();
-                tDebug("+QXmlStreamReader::TokenType::Characters: %s", text.toStdString().c_str());
+                //tDebug("+QXmlStreamReader::TokenType::Characters: %s", text.toStdString().c_str());
                 break;
 
             case QXmlStreamReader::TokenType::StartElement:
-                tDebug("+QXmlStreamReader::TokenType::StartElement: %s", xmlReader.name().toString().toStdString().c_str());
+                //tDebug("+QXmlStreamReader::TokenType::StartElement: %s", name.toStdString().c_str());
                 inElement = true;
-                xmlMap.insert(xmlReader.name().toString(), readRequest());
+                xmlMap.insert(name, readRequest());
                 break;
 
             case QXmlStreamReader::TokenType::EndElement:
-                tDebug("+QXmlStreamReader::TokenType::EndElement: %s", xmlReader.name().toString().toStdString().c_str());
+                //tDebug("+QXmlStreamReader::TokenType::EndElement: %s", name.toStdString().c_str());
 
                 if (inElement) {
-                    return QVariant(xmlMap);
+                    return xmlMap;
                 }
 
-                return QVariant(text);
+                return text;
             default:
                 tDebug("SOAP XML Error");
                 xmlReader.raiseError(QObject::tr("SOAP XML Error."));
-                return QVariant();
+                return {};
         }
     }
 
     tDebug("Unexpected end of SOAP XML");
     xmlReader.raiseError(QObject::tr("Unexpected end of SOAP XML."));
-    return QVariant();
+    return {};
 }
 
 void SoapController::dumpMap(QVariant qVariant) {

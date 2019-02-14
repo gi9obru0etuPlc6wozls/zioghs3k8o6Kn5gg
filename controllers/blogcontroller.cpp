@@ -58,7 +58,6 @@ void BlogController::xmlCreate()
 
 void BlogController::xmlGet(const QString &id)
 {
-    std::cerr <<  "BlogController::xmlGet" << std::endl;
     tDebug("BlogController::xmlGet");
 
     if (soapRequest() != QXmlStreamReader::NoError) {
