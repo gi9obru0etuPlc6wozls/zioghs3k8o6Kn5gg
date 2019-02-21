@@ -23,7 +23,9 @@ public:
 
     QXmlStreamReader::Error soapRequest();
     void soapResponse(const QDomDocumentFragment &frag);
+
     QVariantMap soapParameters();
+    QVariant getParameter(const QString &name) const;
 
     QString getSoapMethod();
     QString errorMessage();
@@ -34,7 +36,6 @@ public:
 protected:
     QDomDocument doc;
 
-private:
     QIODevice *qioDevice;
     QXmlStreamReader xmlReader;
 
@@ -45,7 +46,9 @@ private:
 
     QString soapMethod;
 
-    QVariantMap items; // TODO: optimize?
+    QVariantMap requestParameters; // TODO: optimize?
+private:
+
 };
 
 

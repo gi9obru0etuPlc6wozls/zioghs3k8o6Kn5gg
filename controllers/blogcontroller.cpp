@@ -1,6 +1,7 @@
 #include <iostream>
 #include <QXmlInputSource>
 #include <QMapIterator>
+#include <TCriteria>
 #include "blogcontroller.h"
 #include "blog.h"
 #include "SoapController.h"
@@ -74,7 +75,46 @@ void BlogController::xmlGet(const QString &id)
         return;
     }
 
-    dumpMap(soapParameters());  // TODO: remove
+//    tDebug("1 ===");
+//    dumpMap(soapParameters());  // TODO: remove
+//    tDebug("1 ===");
+
+    //2019-02-18 09:16:54 DEBUG [10361] 1 ===
+    //2019-02-18 09:16:54 DEBUG [10361] --- SoapController::dumpMap: QVariantMap
+    //2019-02-18 09:16:54 DEBUG [10361] Key: GetBlog
+    //2019-02-18 09:16:54 DEBUG [10361] --- SoapController::dumpMap: QVariantMap
+    //2019-02-18 09:16:54 DEBUG [10361] Key: filters
+    //2019-02-18 09:16:54 DEBUG [10361] --- SoapController::dumpMap: QVariantMap
+    //2019-02-18 09:16:54 DEBUG [10361] Key: filter
+    //2019-02-18 09:16:54 DEBUG [10361] --- SoapController::dumpMap: QString
+    //2019-02-18 09:16:54 DEBUG [10361] value: like
+
+    tDebug("1 ===");
+    QString name = "filters";
+
+    QVariant vm = getParameter(name);
+
+    if (vm.canConvert(QMetaType::QVariantMap)) {
+        tDebug("QMetaType::QVariantMap");
+
+        SoapMap xmlMap = vm.toMap();
+
+        TCriteria cri;
+
+        for (QMap<QString, QVariant>::iterator xmlMap_it = xmlMap.begin(); xmlMap_it != xmlMap.end(); ++xmlMap_it) {
+            tDebug("Key: %s ", xmlMap_it.key().toStdString().c_str());
+            QString p = (*xmlMap_it).toMap().value("property").toString();
+            QString v = (*xmlMap_it).toMap().value("value").toString();
+            QString o = (*xmlMap_it).toMap().value("operator").toString();
+
+            tDebug("property: %s value: %s operation: %s",
+                    p.toStdString().c_str(),
+                    v.toStdString().c_str(),
+                    o.toStdString().c_str()
+            );
+            //dumpMap(xmlMap_it.value());
+        }
+    }
 
     QDomDocumentFragment frag = Blog::getAllXml(doc);
 
