@@ -301,5 +301,23 @@ QDataStream &operator>>(QDataStream &ds, Blog &model)
     return ds;
 }
 
+BlogObject::PropertyIndex Blog::getPropertyIndex(const QString &propertyName) {
+    static QMap<QString, BlogObject::PropertyIndex> map{
+            {"id", BlogObject::PropertyIndex::Id},
+            {"title", BlogObject::PropertyIndex::Title},
+            {"body", BlogObject::PropertyIndex::Body},
+            {"colString", BlogObject::PropertyIndex::ColString},
+            {"colInteger", BlogObject::PropertyIndex::ColInteger},
+            {"colFloat", BlogObject::PropertyIndex::ColFloat},
+            {"colDouble", BlogObject::PropertyIndex::ColDouble},
+            {"colNumeric", BlogObject::PropertyIndex::ColNumeric},
+            {"createdAt", BlogObject::PropertyIndex::CreatedAt},
+            {"updatedAt", BlogObject::PropertyIndex::UpdatedAt},
+            {"lockRevision", BlogObject::PropertyIndex::LockRevision}
+    };
+
+    return map.value(propertyName, (BlogObject::PropertyIndex) -1);
+}
+
 // Don't remove below this line
 T_REGISTER_STREAM_OPERATORS(Blog)

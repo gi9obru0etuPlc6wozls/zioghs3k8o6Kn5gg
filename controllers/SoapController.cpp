@@ -258,3 +258,19 @@ void SoapController::dumpMap(QVariant qVariant) {
         tDebug("value: %s", qVariant.toString().toStdString().c_str());
     }
 }
+
+TSql::ComparisonOperator SoapController::getOperator(const QString &op) {
+    static QMap<QString, TSql::ComparisonOperator> map{
+        {"<",       TSql::ComparisonOperator::LessThan},
+        {"<=",      TSql::ComparisonOperator::LessEqual},
+        {"=",       TSql::ComparisonOperator::Equal},
+        {">=",      TSql::ComparisonOperator::GreaterEqual},
+        {">",       TSql::ComparisonOperator::GreaterThan},
+        {"!=",      TSql::ComparisonOperator::NotEqual},
+        {"in",      TSql::ComparisonOperator::In},
+        {"notin",   TSql::ComparisonOperator::NotIn},
+        {"like",    TSql::ComparisonOperator::Like}
+    };
+
+    return map.value(op, TSql::ComparisonOperator::Invalid);
+}

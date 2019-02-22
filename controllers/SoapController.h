@@ -31,6 +31,8 @@ public:
     QString errorMessage();
     QXmlStreamReader::Error error();
 
+    static TSql::ComparisonOperator getOperator(const QString &op);
+
     void dumpMap(QVariant x);
 
 protected:

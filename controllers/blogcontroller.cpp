@@ -112,6 +112,8 @@ void BlogController::xmlGet(const QString &id)
                     v.toStdString().c_str(),
                     o.toStdString().c_str()
             );
+
+            cri.add(Blog::getPropertyIndex(p), SoapController::getOperator(o), QVariant(v));
             //dumpMap(xmlMap_it.value());
         }
     }

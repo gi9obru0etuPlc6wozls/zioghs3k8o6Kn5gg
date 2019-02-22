@@ -7,6 +7,7 @@
 #include <QSharedDataPointer>
 #include <TGlobal>
 #include <TAbstractModel>
+#include <sqlobjects/blogobject.h>
 
 class TModelObject;
 class BlogObject;
@@ -59,6 +60,8 @@ public:
 
     static QDomDocumentFragment getAllXml(QDomDocument &dom);
     QDomElement toXml(QDomDocument &dom) const;
+
+    static BlogObject::PropertyIndex getPropertyIndex(const QString &propertyName);
 
 private:
     QSharedDataPointer<BlogObject> d;
