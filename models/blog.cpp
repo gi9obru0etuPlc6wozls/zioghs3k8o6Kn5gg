@@ -236,6 +236,32 @@ QDomDocumentFragment Blog::getAllXml(QDomDocument &dom)
     return ret;
 }
 
+inline QDomDocumentFragment getXmlByCriteria(QDomDocument &dom, const TCriteria &cri, const QList<QPair<QString, Tf::SortOrder>> &sortColumns, int limit = 0, int offset = 0)
+{
+    QDomDocumentFragment ret = dom.createDocumentFragment();
+    TSqlORMapper<BlogObject> mapper;
+    if (! sortColumns.isEmpty()) {
+        for (auto &p : sortColumns) {
+            if (!p.first.isEmpty()) {
+                mapper.setSortOrder(p.first, p.second);
+            }
+        }
+    }
+    if (limit > 0) {
+        mapper.setLimit(limit);
+    }
+    if (offset > 0) {
+        mapper.setOffset(offset);
+    }
+
+    if (mapper.find(cri) > 0) {
+        for (auto &o : mapper) {
+            ret.appendChild(Blog(o).toXml(dom));
+        }
+    }
+    return ret;
+}
+
 QVector<QString> *Blog::variableNames() const
 {
     static QVector<QString> *pointer;
