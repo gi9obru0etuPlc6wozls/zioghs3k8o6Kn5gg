@@ -75,50 +75,19 @@ void BlogController::xmlGet(const QString &id)
         return;
     }
 
-//    tDebug("1 ===");
-//    dumpMap(soapParameters());  // TODO: remove
-//    tDebug("1 ===");
-
-    //2019-02-18 09:16:54 DEBUG [10361] 1 ===
-    //2019-02-18 09:16:54 DEBUG [10361] --- SoapController::dumpMap: QVariantMap
-    //2019-02-18 09:16:54 DEBUG [10361] Key: GetBlog
-    //2019-02-18 09:16:54 DEBUG [10361] --- SoapController::dumpMap: QVariantMap
-    //2019-02-18 09:16:54 DEBUG [10361] Key: filters
-    //2019-02-18 09:16:54 DEBUG [10361] --- SoapController::dumpMap: QVariantMap
-    //2019-02-18 09:16:54 DEBUG [10361] Key: filter
-    //2019-02-18 09:16:54 DEBUG [10361] --- SoapController::dumpMap: QString
-    //2019-02-18 09:16:54 DEBUG [10361] value: like
+    tDebug("0 ===");
+    QPair<int, int> page = getPagination();
 
     tDebug("1 ===");
-    QString name = "filters";
+    TCriteria cri = getCriteria(Blog::propertyIndexMap());
 
-    QVariant vm = getParameter(name);
+    tDebug("2 ===");
+    const QMap<QString, QString> propertyMap = Blog::propertyColumnMap();
+    QList<QPair<QString, Tf::SortOrder>> sortColumns = getSortOrder(propertyMap);
 
-    if (vm.canConvert(QMetaType::QVariantMap)) {
-        tDebug("QMetaType::QVariantMap");
+    QList<QPair<QString, Tf::SortOrder>> x = sortColumns;
 
-        SoapMap xmlMap = vm.toMap();
-
-        TCriteria cri;
-
-        for (QMap<QString, QVariant>::iterator xmlMap_it = xmlMap.begin(); xmlMap_it != xmlMap.end(); ++xmlMap_it) {
-            tDebug("Key: %s ", xmlMap_it.key().toStdString().c_str());
-            QString p = (*xmlMap_it).toMap().value("property").toString();
-            QString v = (*xmlMap_it).toMap().value("value").toString();
-            QString o = (*xmlMap_it).toMap().value("operator").toString();
-
-            tDebug("property: %s value: %s operation: %s",
-                    p.toStdString().c_str(),
-                    v.toStdString().c_str(),
-                    o.toStdString().c_str()
-            );
-
-            cri.add(Blog::getPropertyIndex(p), SoapController::getOperator(o), QVariant(v));
-            //dumpMap(xmlMap_it.value());
-        }
-    }
-
-    QDomDocumentFragment frag = Blog::getAllXml(doc);
+    QDomDocumentFragment frag = Blog::getXmlByCriteria(doc, cri, sortColumns, page.first, page.second);
 
     soapResponse(frag);
 }

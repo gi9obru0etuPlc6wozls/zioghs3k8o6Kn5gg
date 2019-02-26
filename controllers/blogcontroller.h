@@ -20,7 +20,6 @@ public slots:
     void create();
     void save(const QString &id);
     void remove(const QString &id);
-
 };
 
 #endif // BLOGCONTROLLER_H

@@ -236,13 +236,17 @@ QDomDocumentFragment Blog::getAllXml(QDomDocument &dom)
     return ret;
 }
 
-inline QDomDocumentFragment getXmlByCriteria(QDomDocument &dom, const TCriteria &cri, const QList<QPair<QString, Tf::SortOrder>> &sortColumns, int limit = 0, int offset = 0)
+QDomDocumentFragment Blog::getXmlByCriteria(QDomDocument &dom,
+        const TCriteria &cri,
+        const QList<QPair<QString, Tf::SortOrder>> &sortColumns,
+        int limit, int offset)
 {
     QDomDocumentFragment ret = dom.createDocumentFragment();
     TSqlORMapper<BlogObject> mapper;
     if (! sortColumns.isEmpty()) {
         for (auto &p : sortColumns) {
             if (!p.first.isEmpty()) {
+                tDebug("getXmlByCriteria order: %s", p.first.toStdString().c_str());
                 mapper.setSortOrder(p.first, p.second);
             }
         }
@@ -327,8 +331,8 @@ QDataStream &operator>>(QDataStream &ds, Blog &model)
     return ds;
 }
 
-BlogObject::PropertyIndex Blog::getPropertyIndex(const QString &propertyName) {
-    static QMap<QString, BlogObject::PropertyIndex> map{
+QMap<QString, int> Blog::propertyIndexMap() {
+    static QMap<QString, int> map{
             {"id", BlogObject::PropertyIndex::Id},
             {"title", BlogObject::PropertyIndex::Title},
             {"body", BlogObject::PropertyIndex::Body},
@@ -341,8 +345,24 @@ BlogObject::PropertyIndex Blog::getPropertyIndex(const QString &propertyName) {
             {"updatedAt", BlogObject::PropertyIndex::UpdatedAt},
             {"lockRevision", BlogObject::PropertyIndex::LockRevision}
     };
+    return map;
+}
 
-    return map.value(propertyName, (BlogObject::PropertyIndex) -1);
+QMap<QString, QString> Blog::propertyColumnMap() {
+    static QMap<QString, QString> map{
+            {"id","id"},
+            {"title", "title"},
+            {"body", "body" },
+            {"colString", "col_string"},
+            {"colInteger", "col_integer" },
+            {"colFloat", "col_float"},
+            {"colDouble", "col_double"},
+            {"colNumeric", "col_numeric"},
+            {"createdAt", "created_at"},
+            {"updatedAt", "updated_at" },
+            {"lockRevision", "lock_revision"}
+    };
+    return map;
 }
 
 // Don't remove below this line

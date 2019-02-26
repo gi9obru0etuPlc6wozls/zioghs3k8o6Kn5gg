@@ -237,6 +237,96 @@ QVariant SoapController::readRequest() {
     return {};
 }
 
+QPair<int, int> SoapController::getPagination() const {
+    QVariant pageMap = getParameter("pagination");
+
+    int offset = 0;
+    int limit = 0;
+
+    if (pageMap.canConvert(QMetaType::QVariantMap)) {
+        tDebug("QMetaType::QVariantMap");
+
+        SoapMap xmlMap = pageMap.toMap();
+
+
+        offset = xmlMap.value("start").toInt();
+        limit = xmlMap.value("limit").toInt();
+        tDebug("offset: %d ", offset);
+        tDebug("limit: %d ", limit);
+
+    }
+
+    QPair<int,int> page{limit,offset};
+    return page;
+}
+
+TCriteria SoapController::getCriteria(const QMap<QString, int> &propertyMap) const {
+    TCriteria cri;
+    QVariant vm = getParameter("filters");
+
+    if (vm.canConvert(QMetaType::QVariantMap)) {
+        tDebug("QMetaType::QVariantMap");
+
+        int propertyIndex;
+        TSql::ComparisonOperator comparisonOp;
+
+        SoapMap xmlMap = vm.toMap();
+
+        for (QMap<QString, QVariant>::iterator xmlMap_it = xmlMap.begin(); xmlMap_it != xmlMap.end(); ++xmlMap_it) {
+//            tDebug("Key: %s ", xmlMap_it.key().toStdString().c_str());
+//            QString p = (*xmlMap_it).toMap().value("property").toString();
+//            QString v = (*xmlMap_it).toMap().value("value").toString();
+//            QString o = (*xmlMap_it).toMap().value("operator").toString();
+//
+//            tDebug("property: %s value: %s operation: %s",
+//                   p.toStdString().c_str(),
+//                   v.toStdString().c_str(),
+//                   o.toStdString().c_str()
+//            );
+
+            if ((propertyIndex = propertyMap.value((*xmlMap_it).toMap().value("property").toString(), -1)) == -1) {
+                tDebug("invalid property");
+                continue;
+            }
+            if ((comparisonOp = getComparisonOp((*xmlMap_it).toMap().value("operator").toString())) == TSql::ComparisonOperator::Invalid) {
+                tDebug("invalid operator");
+                continue;
+            }
+
+            cri.add(propertyIndex, comparisonOp, (*xmlMap_it).toMap().value("value"));
+            //dumpMap(xmlMap_it.value());
+        }
+    }
+    return cri;
+}
+
+QList<QPair<QString, Tf::SortOrder>> SoapController::getSortOrder(const QMap<QString, QString> &propertyMap) const {
+    QList<QPair<QString, Tf::SortOrder>> sortColumns;
+    QVariant vm = getParameter("sortValues");
+
+    if (vm.canConvert(QMetaType::QVariantMap)) {
+        tDebug("QMetaType::QVariantMap");
+        SoapMap xmlMap = vm.toMap();
+
+        Tf::SortOrder sortOrder;
+
+        for (QMap<QString, QVariant>::iterator xmlMap_it = xmlMap.begin(); xmlMap_it != xmlMap.end(); ++xmlMap_it) {
+            tDebug("Key: %s ", xmlMap_it.key().toStdString().c_str());
+            QString p = (*xmlMap_it).toMap().value("property").toString();
+            QString o = (*xmlMap_it).toMap().value("order").toString();
+            tDebug("property: %s order: %s",
+                   p.toStdString().c_str(),
+                   o.toStdString().c_str()
+            );
+
+            QString sortColumn = propertyMap.value((*xmlMap_it).toMap().value("property").toString());
+            sortOrder = SoapController::getSortDirection((*xmlMap_it).toMap().value("order").toString());
+            sortColumns.append(QPair<QString, Tf::SortOrder>(sortColumn, sortOrder));
+        }
+    }
+    return sortColumns;
+}
+
 void SoapController::dumpMap(QVariant qVariant) {
     tDebug("--- SoapController::dumpMap: %s", qVariant.typeName());
 
@@ -259,18 +349,27 @@ void SoapController::dumpMap(QVariant qVariant) {
     }
 }
 
-TSql::ComparisonOperator SoapController::getOperator(const QString &op) {
+TSql::ComparisonOperator SoapController::getComparisonOp(const QString &op) {
     static QMap<QString, TSql::ComparisonOperator> map{
-        {"<",       TSql::ComparisonOperator::LessThan},
-        {"<=",      TSql::ComparisonOperator::LessEqual},
-        {"=",       TSql::ComparisonOperator::Equal},
-        {">=",      TSql::ComparisonOperator::GreaterEqual},
-        {">",       TSql::ComparisonOperator::GreaterThan},
-        {"!=",      TSql::ComparisonOperator::NotEqual},
+        {"lt",      TSql::ComparisonOperator::LessThan},
+        {"le",      TSql::ComparisonOperator::LessEqual},
+        {"eq",      TSql::ComparisonOperator::Equal},
+        {"ge",      TSql::ComparisonOperator::GreaterEqual},
+        {"gt",      TSql::ComparisonOperator::GreaterThan},
+        {"ne",      TSql::ComparisonOperator::NotEqual},
         {"in",      TSql::ComparisonOperator::In},
         {"notin",   TSql::ComparisonOperator::NotIn},
         {"like",    TSql::ComparisonOperator::Like}
     };
 
     return map.value(op, TSql::ComparisonOperator::Invalid);
+}
+
+Tf::SortOrder SoapController::getSortDirection(const QString &order) {
+    static QMap<QString, Tf::SortOrder> map{
+        {"DESC", Tf::SortOrder::DescendingOrder},
+        {"ASC",  Tf::SortOrder::AscendingOrder}
+    };
+
+    return map.value(order, Tf::SortOrder::AscendingOrder);
 }

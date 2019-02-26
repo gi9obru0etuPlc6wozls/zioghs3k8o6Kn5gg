@@ -6,6 +6,7 @@
 #include <QVariant>
 #include <QSharedDataPointer>
 #include <TGlobal>
+#include <TCriteria>
 #include <TAbstractModel>
 #include <sqlobjects/blogobject.h>
 
@@ -59,9 +60,13 @@ public:
     static QJsonArray getAllJson();
 
     static QDomDocumentFragment getAllXml(QDomDocument &dom);
+    static QDomDocumentFragment getXmlByCriteria(QDomDocument &dom,
+            const TCriteria &cri, const QList<QPair<QString, Tf::SortOrder>> &sortColumns, int limit = 0, int offset = 0);
+
     QDomElement toXml(QDomDocument &dom) const;
 
-    static BlogObject::PropertyIndex getPropertyIndex(const QString &propertyName);
+    static QMap<QString, int> propertyIndexMap();
+    static QMap<QString, QString> propertyColumnMap();
 
 private:
     QSharedDataPointer<BlogObject> d;
