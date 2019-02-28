@@ -188,28 +188,6 @@ QList<Blog> Blog::getAll()
     return tfGetModelListByCriteria<Blog, BlogObject>(TCriteria());
 }
 
-QString *Blog::tableNameToVariableName() const
-{
-    static QString *pointer;
-    if (!pointer) {
-        pointer = new QString(fieldNameToVariableName(d->tableName()));
-    }
-    return pointer;
-}
-
-QString *Blog::tableNameToObjectName() const
-{
-    static QString *pointer;
-    if (!pointer) {
-        pointer = new QString(fieldNameToVariableName(d->tableName()));
-    }
-
-    if (!pointer->isEmpty()) {
-        (*pointer)[0] = (*pointer)[0].toUpper();
-    }
-    return pointer;
-}
-
 QJsonArray Blog::getAllJson()
 {
     QJsonArray array;
@@ -221,89 +199,6 @@ QJsonArray Blog::getAllJson()
         }
     }
     return array;
-}
-
-QDomDocumentFragment Blog::getAllXml(QDomDocument &dom)
-{
-    QDomDocumentFragment ret = dom.createDocumentFragment();
-    TSqlORMapper<BlogObject> mapper;
-
-    if (mapper.find() > 0) {
-        for (TSqlORMapperIterator<BlogObject> i(mapper); i.hasNext(); ) {
-            ret.appendChild(Blog(i.next()).toXml(dom));
-        }
-    }
-    return ret;
-}
-
-QDomDocumentFragment Blog::getXmlByCriteria(QDomDocument &dom,
-        const TCriteria &cri,
-        const QList<QPair<QString, Tf::SortOrder>> &sortColumns,
-        int limit, int offset)
-{
-    QDomDocumentFragment ret = dom.createDocumentFragment();
-    TSqlORMapper<BlogObject> mapper;
-    if (! sortColumns.isEmpty()) {
-        for (auto &p : sortColumns) {
-            if (!p.first.isEmpty()) {
-                tDebug("getXmlByCriteria order: %s", p.first.toStdString().c_str());
-                mapper.setSortOrder(p.first, p.second);
-            }
-        }
-    }
-    if (limit > 0) {
-        mapper.setLimit(limit);
-    }
-    if (offset > 0) {
-        mapper.setOffset(offset);
-    }
-
-    if (mapper.find(cri) > 0) {
-        for (auto &o : mapper) {
-            ret.appendChild(Blog(o).toXml(dom));
-        }
-    }
-    return ret;
-}
-
-QVector<QString> *Blog::variableNames() const
-{
-    static QVector<QString> *pointer;
-    if (!pointer) {
-        pointer = new QVector<QString>;
-        const QMetaObject *metaObj = modelData()->metaObject();
-        pointer->fill(nullptr, modelData()->metaObject()->propertyCount());
-
-        for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
-            QString n(metaObj->property(i).name());
-
-            if (!n.isEmpty()) {
-                (*pointer)[i] = *tableNameToVariableName() + ":" + fieldNameToVariableName(n);
-            }
-        }
-    }
-    return pointer;
-}
-
-QDomElement Blog::toXml(QDomDocument &dom) const {
-    QDomElement ret = dom.createElement(*tableNameToVariableName() +':'+ *tableNameToObjectName());
-    QVector<QString> *varNames = variableNames();
-
-    const TModelObject *md = modelData();
-    const QMetaObject *metaObj = md->metaObject();
-
-    for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
-        const char *propName = metaObj->property(i).name();
-        QString n(propName);
-        if (!n.isEmpty()) {
-            QDomElement tag = dom.createElement((*varNames)[i]);
-            ret.appendChild(tag);
-
-            QDomText text = dom.createTextNode(md->property(propName).toString());
-            tag.appendChild(text);
-        }
-    }
-    return ret;
 }
 
 TModelObject *Blog::modelData()
@@ -363,6 +258,111 @@ QMap<QString, QString> Blog::propertyColumnMap() {
             {"lockRevision", "lock_revision"}
     };
     return map;
+}
+
+QString *Blog::tableNameToVariableName() const
+{
+    static QString *pointer;
+    if (!pointer) {
+        pointer = new QString(fieldNameToVariableName(d->tableName()));
+    }
+    return pointer;
+}
+
+QString *Blog::tableNameToObjectName() const
+{
+    static QString *pointer;
+    if (!pointer) {
+        pointer = new QString(fieldNameToVariableName(d->tableName()));
+    }
+
+    if (!pointer->isEmpty()) {
+        (*pointer)[0] = (*pointer)[0].toUpper();
+    }
+    return pointer;
+}
+
+QVector<QString> *Blog::variableNames() const
+{
+    static QVector<QString> *pointer;
+    if (!pointer) {
+        pointer = new QVector<QString>;
+        const QMetaObject *metaObj = modelData()->metaObject();
+        pointer->fill(nullptr, modelData()->metaObject()->propertyCount());
+
+        for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
+            QString n(metaObj->property(i).name());
+
+            if (!n.isEmpty()) {
+                (*pointer)[i] = *tableNameToVariableName() + ":" + fieldNameToVariableName(n);
+            }
+        }
+    }
+    return pointer;
+}
+
+QDomElement Blog::toXml(QDomDocument &dom) const {
+    QDomElement ret = dom.createElement(*tableNameToVariableName() +':'+ *tableNameToObjectName());
+    QVector<QString> *varNames = variableNames();
+
+    const TModelObject *md = modelData();
+    const QMetaObject *metaObj = md->metaObject();
+
+    for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
+        const char *propName = metaObj->property(i).name();
+        QString n(propName);
+        if (!n.isEmpty()) {
+            QDomElement tag = dom.createElement((*varNames)[i]);
+            ret.appendChild(tag);
+
+            QDomText text = dom.createTextNode(md->property(propName).toString());
+            tag.appendChild(text);
+        }
+    }
+    return ret;
+}
+
+QDomDocumentFragment Blog::getAllXml(QDomDocument &dom)
+{
+    QDomDocumentFragment ret = dom.createDocumentFragment();
+    TSqlORMapper<BlogObject> mapper;
+
+    if (mapper.find() > 0) {
+        for (TSqlORMapperIterator<BlogObject> i(mapper); i.hasNext(); ) {
+            ret.appendChild(Blog(i.next()).toXml(dom));
+        }
+    }
+    return ret;
+}
+
+QDomDocumentFragment Blog::getXmlByCriteria(QDomDocument &dom,
+                                            const TCriteria &cri,
+                                            const QList<QPair<QString, Tf::SortOrder>> &sortColumns,
+                                            int limit, int offset)
+{
+    QDomDocumentFragment ret = dom.createDocumentFragment();
+    TSqlORMapper<BlogObject> mapper;
+    if (! sortColumns.isEmpty()) {
+        for (auto &p : sortColumns) {
+            if (!p.first.isEmpty()) {
+                tDebug("getXmlByCriteria order: %s", p.first.toStdString().c_str());
+                mapper.setSortOrder(p.first, p.second);
+            }
+        }
+    }
+    if (limit > 0) {
+        mapper.setLimit(limit);
+    }
+    if (offset > 0) {
+        mapper.setOffset(offset);
+    }
+
+    if (mapper.find(cri) > 0) {
+        for (auto &o : mapper) {
+            ret.appendChild(Blog(o).toXml(dom));
+        }
+    }
+    return ret;
 }
 
 // Don't remove below this line

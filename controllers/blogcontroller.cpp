@@ -82,10 +82,7 @@ void BlogController::xmlGet(const QString &id)
     TCriteria cri = getCriteria(Blog::propertyIndexMap());
 
     tDebug("2 ===");
-    const QMap<QString, QString> propertyMap = Blog::propertyColumnMap();
-    QList<QPair<QString, Tf::SortOrder>> sortColumns = getSortOrder(propertyMap);
-
-    QList<QPair<QString, Tf::SortOrder>> x = sortColumns;
+    QList<QPair<QString, Tf::SortOrder>> sortColumns = getSortOrder(Blog::propertyColumnMap());
 
     QDomDocumentFragment frag = Blog::getXmlByCriteria(doc, cri, sortColumns, page.first, page.second);
 
