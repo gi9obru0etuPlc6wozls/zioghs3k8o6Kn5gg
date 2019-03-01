@@ -28,14 +28,12 @@ public:
     QVariantMap soapParameters();
     QVariant getParameter(const QString &name) const;
     QPair<int, int> getPagination() const;
-    TCriteria getCriteria(const QMap<QString, int> &propertyMap) const;
     QList<QPair<QString, Tf::SortOrder>> getSortOrder(const QMap<QString, QString> &propertyMap) const;
 
     QString getSoapMethod();
     QString errorMessage();
     QXmlStreamReader::Error error();
 
-    static TSql::ComparisonOperator getComparisonOp(const QString &op);
     static Tf::SortOrder getSortDirection(const QString &order);
 
     void dumpMap(QVariant x);
