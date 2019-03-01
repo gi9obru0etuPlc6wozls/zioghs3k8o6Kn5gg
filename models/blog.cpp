@@ -226,7 +226,7 @@ QDataStream &operator>>(QDataStream &ds, Blog &model)
     return ds;
 }
 
-QMap<QString, int> Blog::propertyIndexMap() {
+int Blog::propertyIndexMap(const QString &propertyName) {
     static QMap<QString, int> map{
             {"id", BlogObject::PropertyIndex::Id},
             {"title", BlogObject::PropertyIndex::Title},
@@ -240,7 +240,7 @@ QMap<QString, int> Blog::propertyIndexMap() {
             {"updatedAt", BlogObject::PropertyIndex::UpdatedAt},
             {"lockRevision", BlogObject::PropertyIndex::LockRevision}
     };
-    return map;
+    return map.value(propertyName, -1);
 }
 
 QMap<QString, QString> Blog::propertyColumnMap() {
@@ -336,9 +336,9 @@ QDomDocumentFragment Blog::getAllXml(QDomDocument &dom)
 }
 
 QDomDocumentFragment Blog::getXmlByCriteria(QDomDocument &dom,
-                                            const TCriteria &cri,
-                                            const QList<QPair<QString, Tf::SortOrder>> &sortColumns,
-                                            int limit, int offset)
+    const TCriteria &cri,
+    const QList<QPair<QString, Tf::SortOrder>> &sortColumns,
+    int limit, int offset)
 {
     QDomDocumentFragment ret = dom.createDocumentFragment();
     TSqlORMapper<BlogObject> mapper;
@@ -363,6 +363,98 @@ QDomDocumentFragment Blog::getXmlByCriteria(QDomDocument &dom,
         }
     }
     return ret;
+}
+
+QDomDocumentFragment Blog::getXmlByCriteria(QDomDocument &dom,
+    const QVariant &filters,
+    const QList<QPair<QString, Tf::SortOrder>> &sortColumns,
+    int limit, int offset)
+{
+    TCriteria cri;
+
+
+
+    QDomDocumentFragment ret = dom.createDocumentFragment();
+    TSqlORMapper<BlogObject> mapper;
+    if (! sortColumns.isEmpty()) {
+        for (auto &p : sortColumns) {
+            if (!p.first.isEmpty()) {
+                tDebug("getXmlByCriteria order: %s", p.first.toStdString().c_str());
+                mapper.setSortOrder(p.first, p.second);
+            }
+        }
+    }
+    if (limit > 0) {
+        mapper.setLimit(limit);
+    }
+    if (offset > 0) {
+        mapper.setOffset(offset);
+    }
+
+    if (mapper.find(cri) > 0) {
+        for (auto &o : mapper) {
+            ret.appendChild(Blog(o).toXml(dom));
+        }
+    }
+    return ret;
+}
+
+//TCriteria Blog::getCriteria(const QMap<QString, int> &propertyMap) const {
+TCriteria Blog::getCriteria(const QVariant &vm) const {
+    TCriteria cri;
+
+    if (vm.canConvert(QMetaType::QVariantMap)) {
+        tDebug("QMetaType::QVariantMap");
+
+        int propertyIndex;
+        TSql::ComparisonOperator comparisonOp;
+
+        QMultiMap<QString, QVariant> xmlMap = vm.toMap();
+
+        for (QMap<QString, QVariant>::iterator xmlMap_it = xmlMap.begin(); xmlMap_it != xmlMap.end(); ++xmlMap_it) {
+//            tDebug("Key: %s ", xmlMap_it.key().toStdString().c_str());
+//            QString p = (*xmlMap_it).toMap().value("property").toString();
+//            QString v = (*xmlMap_it).toMap().value("value").toString();
+//            QString o = (*xmlMap_it).toMap().value("operator").toString();
+//
+//            tDebug("property: %s value: %s operation: %s",
+//                   p.toStdString().c_str(),
+//                   v.toStdString().c_str(),
+//                   o.toStdString().c_str()
+//            );
+
+            //if ((propertyIndex = propertyMap.value((*xmlMap_it).toMap().value("property").toString(), -1)) == -1) {
+            //if ((propertyIndex = propertyIndexMap((*xmlMap_it).toMap().value("property").toString()) == -1) {
+            if ((propertyIndex = propertyIndexMap((*xmlMap_it).toMap().value("property").toString())) == -1) {
+                tDebug("invalid property");
+                continue;
+            }
+            if ((comparisonOp = getComparisonOp((*xmlMap_it).toMap().value("operator").toString())) == TSql::ComparisonOperator::Invalid) {
+                tDebug("invalid operator");
+                continue;
+            }
+
+            cri.add(propertyIndex, comparisonOp, (*xmlMap_it).toMap().value("value"));
+            //dumpMap(xmlMap_it.value());
+        }
+    }
+    return cri;
+}
+
+TSql::ComparisonOperator Blog::getComparisonOp(const QString &op) {
+    static QMap<QString, TSql::ComparisonOperator> map{
+            {"lt",      TSql::ComparisonOperator::LessThan},
+            {"le",      TSql::ComparisonOperator::LessEqual},
+            {"eq",      TSql::ComparisonOperator::Equal},
+            {"ge",      TSql::ComparisonOperator::GreaterEqual},
+            {"gt",      TSql::ComparisonOperator::GreaterThan},
+            {"ne",      TSql::ComparisonOperator::NotEqual},
+            {"in",      TSql::ComparisonOperator::In},
+            {"notin",   TSql::ComparisonOperator::NotIn},
+            {"like",    TSql::ComparisonOperator::Like}
+    };
+
+    return map.value(op, TSql::ComparisonOperator::Invalid);
 }
 
 // Don't remove below this line

@@ -79,12 +79,15 @@ void BlogController::xmlGet(const QString &id)
     QPair<int, int> page = getPagination();
 
     tDebug("1 ===");
-    TCriteria cri = getCriteria(Blog::propertyIndexMap());
+    //TCriteria cri = getCriteria(Blog::propertyIndexMap());
+
+    QVariant filters = getParameter("filters");
 
     tDebug("2 ===");
     QList<QPair<QString, Tf::SortOrder>> sortColumns = getSortOrder(Blog::propertyColumnMap());
 
-    QDomDocumentFragment frag = Blog::getXmlByCriteria(doc, cri, sortColumns, page.first, page.second);
+    //QDomDocumentFragment frag = Blog::getXmlByCriteria(doc, cri, sortColumns, page.first, page.second);
+    QDomDocumentFragment frag = Blog::getXmlByCriteria(doc, filters, sortColumns, page.first, page.second);
 
     soapResponse(frag);
 }

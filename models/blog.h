@@ -62,10 +62,16 @@ public:
     static QDomDocumentFragment getAllXml(QDomDocument &dom);
     static QDomDocumentFragment getXmlByCriteria(QDomDocument &dom,
             const TCriteria &cri, const QList<QPair<QString, Tf::SortOrder>> &sortColumns, int limit = 0, int offset = 0);
+    static QDomDocumentFragment getXmlByCriteria(QDomDocument &dom,
+            const QVariant &filters, const QList<QPair<QString, Tf::SortOrder>> &sortColumns, int limit = 0, int offset = 0);
+
+
+    TCriteria getCriteria(const QVariant &qv) const;
+    static TSql::ComparisonOperator getComparisonOp(const QString &op);
 
     QDomElement toXml(QDomDocument &dom) const;
 
-    static QMap<QString, int> propertyIndexMap();
+    static int propertyIndexMap(const QString &propertyName);
     static QMap<QString, QString> propertyColumnMap();
 
 private:

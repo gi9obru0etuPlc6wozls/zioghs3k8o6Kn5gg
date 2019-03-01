@@ -270,7 +270,7 @@ TCriteria SoapController::getCriteria(const QMap<QString, int> &propertyMap) con
         int propertyIndex;
         TSql::ComparisonOperator comparisonOp;
 
-        SoapMap xmlMap = vm.toMap();
+        QMultiMap<QString, QVariant> xmlMap = vm.toMap();
 
         for (QMap<QString, QVariant>::iterator xmlMap_it = xmlMap.begin(); xmlMap_it != xmlMap.end(); ++xmlMap_it) {
 //            tDebug("Key: %s ", xmlMap_it.key().toStdString().c_str());
