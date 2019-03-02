@@ -83,9 +83,9 @@ void BlogController::xmlGet(const QString &id)
     QVariant filters = getParameter("filters");
 
     tDebug("2 ===");
-    QList<QPair<QString, Tf::SortOrder>> sortColumns = getSortOrder(Blog::propertyColumnMap());
+    QVariant sortValues = getParameter("sortValues");
 
-    QDomDocumentFragment frag = Blog::getXmlByCriteria(doc, filters, sortColumns, page.first, page.second);
+    QDomDocumentFragment frag = Blog::findXmlByCriteria(doc, filters, sortValues, page.first, page.second);
 
     soapResponse(frag);
 }

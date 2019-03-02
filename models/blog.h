@@ -62,17 +62,20 @@ public:
     static QDomDocumentFragment getAllXml(QDomDocument &dom);
     static QDomDocumentFragment getXmlByCriteria(QDomDocument &dom,
             const TCriteria &cri, const QList<QPair<QString, Tf::SortOrder>> &sortColumns, int limit = 0, int offset = 0);
-    static QDomDocumentFragment getXmlByCriteria(QDomDocument &dom,
-            const QVariant &filters, const QList<QPair<QString, Tf::SortOrder>> &sortColumns, int limit = 0, int offset = 0);
+    static QDomDocumentFragment findXmlByCriteria(QDomDocument &dom,
+                                                  const QVariant &filtersParam, const QVariant &sortColumnsParam,
+                                                  int limit = 0, int offset = 0);
 
 
-    TCriteria getCriteria(const QVariant &qv) const;
+    static TCriteria getCriteria(const QVariant &qv);
+    static QList<QPair<QString, Tf::SortOrder>> getSortOrder(const QVariant &qv);
     static TSql::ComparisonOperator getComparisonOp(const QString &op);
+    static Tf::SortOrder getSortDirection(const QString &order);
 
     QDomElement toXml(QDomDocument &dom) const;
 
     static int propertyIndexMap(const QString &propertyName);
-    static QMap<QString, QString> propertyColumnMap();
+    static QString propertyColumnMap(const QString &propertyName);
 
 private:
     QSharedDataPointer<BlogObject> d;

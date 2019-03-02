@@ -260,33 +260,6 @@ QPair<int, int> SoapController::getPagination() const {
     return page;
 }
 
-QList<QPair<QString, Tf::SortOrder>> SoapController::getSortOrder(const QMap<QString, QString> &propertyMap) const {
-    QList<QPair<QString, Tf::SortOrder>> sortColumns;
-    QVariant vm = getParameter("sortValues");
-
-    if (vm.canConvert(QMetaType::QVariantMap)) {
-        tDebug("QMetaType::QVariantMap");
-        SoapMap xmlMap = vm.toMap();
-
-        Tf::SortOrder sortOrder;
-
-        for (QMap<QString, QVariant>::iterator xmlMap_it = xmlMap.begin(); xmlMap_it != xmlMap.end(); ++xmlMap_it) {
-            tDebug("Key: %s ", xmlMap_it.key().toStdString().c_str());
-            QString p = (*xmlMap_it).toMap().value("property").toString();
-            QString o = (*xmlMap_it).toMap().value("order").toString();
-            tDebug("property: %s order: %s",
-                   p.toStdString().c_str(),
-                   o.toStdString().c_str()
-            );
-
-            QString sortColumn = propertyMap.value((*xmlMap_it).toMap().value("property").toString());
-            sortOrder = SoapController::getSortDirection((*xmlMap_it).toMap().value("order").toString());
-            sortColumns.append(QPair<QString, Tf::SortOrder>(sortColumn, sortOrder));
-        }
-    }
-    return sortColumns;
-}
-
 void SoapController::dumpMap(QVariant qVariant) {
     tDebug("--- SoapController::dumpMap: %s", qVariant.typeName());
 
@@ -307,13 +280,4 @@ void SoapController::dumpMap(QVariant qVariant) {
         tDebug("Error in QMetaType: %s", qVariant.typeName());
         tDebug("value: %s", qVariant.toString().toStdString().c_str());
     }
-}
-
-Tf::SortOrder SoapController::getSortDirection(const QString &order) {
-    static QMap<QString, Tf::SortOrder> map{
-        {"DESC", Tf::SortOrder::DescendingOrder},
-        {"ASC",  Tf::SortOrder::AscendingOrder}
-    };
-
-    return map.value(order, Tf::SortOrder::AscendingOrder);
 }
