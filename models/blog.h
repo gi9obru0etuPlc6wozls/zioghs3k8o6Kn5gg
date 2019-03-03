@@ -60,22 +60,24 @@ public:
     static QJsonArray getAllJson();
 
     static QDomDocumentFragment getAllXml(QDomDocument &dom);
-    static QDomDocumentFragment getXmlByCriteria(QDomDocument &dom,
-            const TCriteria &cri, const QList<QPair<QString, Tf::SortOrder>> &sortColumns, int limit = 0, int offset = 0);
+    static QDomDocumentFragment findXmlByCriteria(QDomDocument &dom,
+                                                  const TCriteria &cri,
+                                                  const QList<QPair<QString, Tf::SortOrder>> &sortColumns,
+                                                  int limit = 0, int offset = 0);
     static QDomDocumentFragment findXmlByCriteria(QDomDocument &dom,
                                                   const QVariant &filtersParam, const QVariant &sortColumnsParam,
                                                   int limit = 0, int offset = 0);
 
 
-    static TCriteria getCriteria(const QVariant &qv);
-    static QList<QPair<QString, Tf::SortOrder>> getSortOrder(const QVariant &qv);
-    static TSql::ComparisonOperator getComparisonOp(const QString &op);
-    static Tf::SortOrder getSortDirection(const QString &order);
+    static TCriteria paramToCriteria(const QVariant &vm);
+    static QList<QPair<QString, Tf::SortOrder>> paramToSortOrder(const QVariant &sortOrdersParam);
+    static TSql::ComparisonOperator comparisonOperator(const QString &op);
+    static Tf::SortOrder sortOrder(const QString &order);
 
     QDomElement toXml(QDomDocument &dom) const;
 
-    static int propertyIndexMap(const QString &propertyName);
-    static QString propertyColumnMap(const QString &propertyName);
+    static int propertyToIndex(const QString &propertyName);
+    static QString propertyToColumn(const QString &propertyName);
 
 private:
     QSharedDataPointer<BlogObject> d;

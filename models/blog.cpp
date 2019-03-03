@@ -301,7 +301,7 @@ QDomDocumentFragment Blog::getAllXml(QDomDocument &dom)
     return ret;
 }
 
-QDomDocumentFragment Blog::getXmlByCriteria(QDomDocument &dom,
+QDomDocumentFragment Blog::findXmlByCriteria(QDomDocument &dom,
     const TCriteria &cri,
     const QList<QPair<QString, Tf::SortOrder>> &sortColumns,
     int limit, int offset)
@@ -336,35 +336,13 @@ QDomDocumentFragment Blog::findXmlByCriteria(QDomDocument &dom,
     const QVariant &sortColumnsParam,
     int limit, int offset)
 {
-    TCriteria cri = getCriteria(filtersParam);
-    QList<QPair<QString, Tf::SortOrder>> sortColumns = getSortOrder(sortColumnsParam);
-    QDomDocumentFragment ret = dom.createDocumentFragment();
+    TCriteria cri = paramToCriteria(filtersParam);
+    QList<QPair<QString, Tf::SortOrder>> sortColumns = paramToSortOrder(sortColumnsParam);
 
-    TSqlORMapper<BlogObject> mapper;
-    if (! sortColumns.isEmpty()) {
-        for (auto &p : sortColumns) {
-            if (!p.first.isEmpty()) {
-                tDebug("findXmlByCriteria order: %s", p.first.toStdString().c_str());
-                mapper.setSortOrder(p.first, p.second);
-            }
-        }
-    }
-    if (limit > 0) {
-        mapper.setLimit(limit);
-    }
-    if (offset > 0) {
-        mapper.setOffset(offset);
-    }
-
-    if (mapper.find(cri) > 0) {
-        for (auto &o : mapper) {
-            ret.appendChild(Blog(o).toXml(dom));
-        }
-    }
-    return ret;
+    return findXmlByCriteria(dom, cri, sortColumns, limit, offset);
 }
 
-TCriteria Blog::getCriteria(const QVariant &vm) {
+TCriteria Blog::paramToCriteria(const QVariant &vm) {
     TCriteria cri;
 
     if (vm.canConvert(QMetaType::QVariantMap)) {
@@ -387,11 +365,11 @@ TCriteria Blog::getCriteria(const QVariant &vm) {
 //                   v.toStdString().c_str(),
 //                   o.toStdString().c_str()
 //            );
-            if ((propertyIndex = propertyIndexMap(filter.toMap().value("property").toString())) == -1) {
+            if ((propertyIndex = propertyToIndex(filter.toMap().value("property").toString())) == -1) {
                 tDebug("invalid property");
                 continue;
             }
-            if ((comparisonOp = getComparisonOp(filter.toMap().value("operator").toString())) == TSql::ComparisonOperator::Invalid) {
+            if ((comparisonOp = comparisonOperator(filter.toMap().value("operator").toString())) == TSql::ComparisonOperator::Invalid) {
                 tDebug("invalid operator");
                 continue;
             }
@@ -403,32 +381,31 @@ TCriteria Blog::getCriteria(const QVariant &vm) {
     return cri;
 }
 
-QList<QPair<QString, Tf::SortOrder>> Blog::getSortOrder(const QVariant &vm) {
+QList<QPair<QString, Tf::SortOrder>> Blog::paramToSortOrder(const QVariant &sortOrdersParam) {
     QList<QPair<QString, Tf::SortOrder>> sortColumns;
 
-    if (vm.canConvert(QMetaType::QVariantMap)) {
+    if (sortOrdersParam.canConvert(QMetaType::QVariantMap)) {
         tDebug("QMetaType::QVariantMap");
-        QMultiMap<QString, QVariant> xmlMap = vm.toMap();
+        QMultiMap<QString, QVariant> sortOrders = sortOrdersParam.toMap();
 
-        Tf::SortOrder sortOrder;
-
-        for (QMap<QString, QVariant>::iterator xmlMap_it = xmlMap.begin(); xmlMap_it != xmlMap.end(); ++xmlMap_it) {
-            tDebug("Key: %s ", xmlMap_it.key().toStdString().c_str());
-            QString p = (*xmlMap_it).toMap().value("property").toString();
-            QString o = (*xmlMap_it).toMap().value("order").toString();
-            tDebug("property: %s order: %s",
-                   p.toStdString().c_str(),
-                   o.toStdString().c_str()
-            );
-            QString sortColumn = propertyColumnMap((*xmlMap_it).toMap().value("property").toString());
-            sortOrder = Blog::getSortDirection((*xmlMap_it).toMap().value("order").toString());
-            sortColumns.append(QPair<QString, Tf::SortOrder>(sortColumn, sortOrder));
+        //for (QMap<QString, QVariant>::iterator xmlMap_it = sortOrders.begin(); xmlMap_it != sortOrders.end(); ++xmlMap_it) {
+        for (auto &sortOrder: sortOrders) {
+//            tDebug("Key: %s ", sortOrder.key().toStdString().c_str());
+//            QString p = (*sortOrder).toMap().value("property").toString();
+//            QString o = (*sortOrder).toMap().value("order").toString();
+//            tDebug("property: %s order: %s",
+//                   p.toStdString().c_str(),
+//                   o.toStdString().c_str()
+//            );
+            QString sortColumn = propertyToColumn(sortOrder.toMap().value("property").toString());
+            Tf::SortOrder sortDirection = Blog::sortOrder(sortOrder.toMap().value("order").toString());
+            sortColumns.append(QPair<QString, Tf::SortOrder>(sortColumn, sortDirection));
         }
     }
     return sortColumns;
 }
 
-int Blog::propertyIndexMap(const QString &propertyName) {
+int Blog::propertyToIndex(const QString &propertyName) {
     static QMap<QString, int> map{
             {"id", BlogObject::PropertyIndex::Id},
             {"title", BlogObject::PropertyIndex::Title},
@@ -445,7 +422,7 @@ int Blog::propertyIndexMap(const QString &propertyName) {
     return map.value(propertyName, -1);
 }
 
-QString Blog::propertyColumnMap(const QString &propertyName) {
+QString Blog::propertyToColumn(const QString &propertyName) {
     static QMap<QString, QString> map{
             {"id","id"},
             {"title", "title"},
@@ -462,7 +439,7 @@ QString Blog::propertyColumnMap(const QString &propertyName) {
     return map.value(propertyName, {});
 }
 
-TSql::ComparisonOperator Blog::getComparisonOp(const QString &op) {
+TSql::ComparisonOperator Blog::comparisonOperator(const QString &op) {
     static QMap<QString, TSql::ComparisonOperator> map{
             {"lt",      TSql::ComparisonOperator::LessThan},
             {"le",      TSql::ComparisonOperator::LessEqual},
@@ -478,7 +455,7 @@ TSql::ComparisonOperator Blog::getComparisonOp(const QString &op) {
     return map.value(op, TSql::ComparisonOperator::Invalid);
 }
 
-Tf::SortOrder Blog::getSortDirection(const QString &order) {
+Tf::SortOrder Blog::sortOrder(const QString &order) {
     static QMap<QString, Tf::SortOrder> map{
             {"DESC", Tf::SortOrder::DescendingOrder},
             {"ASC",  Tf::SortOrder::AscendingOrder}
