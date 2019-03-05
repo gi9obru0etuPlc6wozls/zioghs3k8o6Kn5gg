@@ -248,23 +248,43 @@ QString *Blog::tableNameToObjectName() const
     return pointer;
 }
 
+//QVector<QString> *Blog::variableNames() const
+//{
+//    static QVector<QString> *pointer;
+//    if (!pointer) {
+//        pointer = new QVector<QString>;
+//        const QMetaObject *metaObj = modelData()->metaObject();
+//        pointer->fill(nullptr, modelData()->metaObject()->propertyCount());
+//
+//        for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
+//            QString n(metaObj->property(i).name());
+//
+//            if (!n.isEmpty()) {
+//                (*pointer)[i] = *tableNameToVariableName() + ":" + fieldNameToVariableName(n);
+//                tDebug("%d: %s",i, (*pointer)[i].toStdString().c_str());
+//            }
+//        }
+//    }
+//    return pointer;
+//}
+
 QVector<QString> *Blog::variableNames() const
 {
-    static QVector<QString> *pointer;
-    if (!pointer) {
-        pointer = new QVector<QString>;
-        const QMetaObject *metaObj = modelData()->metaObject();
-        pointer->fill(nullptr, modelData()->metaObject()->propertyCount());
-
-        for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
-            QString n(metaObj->property(i).name());
-
-            if (!n.isEmpty()) {
-                (*pointer)[i] = *tableNameToVariableName() + ":" + fieldNameToVariableName(n);
-            }
-        }
-    }
-    return pointer;
+    static QVector<QString> vector{
+            {""},
+            {"blog:id"},
+            {"blog:title"},
+            {"blog:body"},
+            {"blog:colString"},
+            {"blog:colInteger"},
+            {"blog:colFloat"},
+            {"blog:colDouble"},
+            {"blog:colNumeric"},
+            {"blog:createdAt"},
+            {"blog:updatedAt"},
+            {"blog:lockRevision"}
+    };
+    return &vector;
 }
 
 QDomElement Blog::toXml(QDomDocument &dom) const {

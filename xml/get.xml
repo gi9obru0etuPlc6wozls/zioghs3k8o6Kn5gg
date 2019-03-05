@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <GetBlog xmlns="http://framesquared.com/Blog">
+            <pagination>
+                <start>0</start>
+                <limit>15</limit>
+            </pagination>
+            <filters>
+                <filter>
+                    <property>title</property>
+                    <value>Mrs</value>
+                    <operator>like</operator>
+                </filter>
+                <filter>
+                    <property>colInteger</property>
+                    <value>500</value>
+                    <operator>gt</operator>
+                </filter>
+            </filters>
+            <sortValues>
+                <sortValue>
+                    <property>colInteger</property>
+                    <order>ASC</order>
+                </sortValue>
+                <sortValue>
+                    <property>title</property>
+                    <order>ASC</order>
+                </sortValue>
+            </sortValues>
+        </GetBlog>
+    </soap:Body>
+</soap:Envelope>
