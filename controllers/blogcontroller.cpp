@@ -61,9 +61,12 @@ void BlogController::xmlGet(const QString &id)
 {
     tDebug("BlogController::xmlGet");
 
+    QString message;
+
+
     if (soapRequest() != QXmlStreamReader::NoError) {
         tDebug("soapRequest error: %s %d", errorMessage().toStdString().c_str(), error());
-        renderText(errorMessage());
+        soapError(errorMessage());
         return;
     }
 
@@ -71,23 +74,25 @@ void BlogController::xmlGet(const QString &id)
     std::cerr <<  "getSoapMethod: " << soapMethod.toStdString() << std::endl;
 
     if (soapMethod != "GetBlog") {
-        renderText("Invalid SOAP method:" + soapMethod);
+        soapError("Invalid SOAP method:" + soapMethod);
         return;
     }
 
-    tDebug("0 ===");
     QPair<int, int> page = getPagination();
+    QVariant filters = getSoapParameter("filters");
+    QVariant sortValues = getSoapParameter("sortValues");
 
-    tDebug("1 ===");
+    int count;
 
-    QVariant filters = getParameter("filters");
+    QDomDocumentFragment frag = Blog::findXmlByCriteria(doc, filters, sortValues, count, page.first, page.second);
 
-    tDebug("2 ===");
-    QVariant sortValues = getParameter("sortValues");
+    tDebug("The count of the number of records is the following number %d", count);
 
-    QDomDocumentFragment frag = Blog::findXmlByCriteria(doc, filters, sortValues, page.first, page.second);
+    QVariantMap qvm{
+            {"total", count}
+    };
 
-    soapResponse(frag);
+    soapResponse(frag, qvm);
 }
 
 void BlogController::create()

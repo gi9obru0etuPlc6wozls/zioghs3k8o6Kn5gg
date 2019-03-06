@@ -63,9 +63,11 @@ public:
     static QDomDocumentFragment findXmlByCriteria(QDomDocument &dom,
                                                   const TCriteria &cri,
                                                   const QList<QPair<QString, Tf::SortOrder>> &sortColumns,
+                                                  int &count,
                                                   int limit = 0, int offset = 0);
     static QDomDocumentFragment findXmlByCriteria(QDomDocument &dom,
                                                   const QVariant &filtersParam, const QVariant &sortColumnsParam,
+                                                  int &count,
                                                   int limit = 0, int offset = 0);
 
 
@@ -89,8 +91,11 @@ private:
 
     QVector<QString> *variableNames() const;
 
-    QString *tableNameToVariableName() const;
-    QString *tableNameToObjectName() const;
+    QString objectName() const;
+    QString variableName() const;
+
+//    QString *tableNameToVariableName() const;
+//    QString *tableNameToObjectName() const;
 };
 
 Q_DECLARE_METATYPE(Blog)

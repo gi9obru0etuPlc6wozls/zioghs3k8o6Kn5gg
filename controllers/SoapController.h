@@ -23,10 +23,11 @@ public:
     SoapController();
 
     QXmlStreamReader::Error soapRequest();
-    void soapResponse(const QDomDocumentFragment &frag);
+    void soapResponse(const QDomDocumentFragment &frag, const QVariantMap &qvm);
+    void soapError(const QString &messageString);
 
     QVariantMap soapParameters();
-    QVariant getParameter(const QString &name) const;
+    QVariant getSoapParameter(const QString &name) const;
     QPair<int, int> getPagination() const;
 
     QString getSoapMethod();

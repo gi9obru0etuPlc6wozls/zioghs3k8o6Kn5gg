@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <total>100</total>
+        <success>true</success>
+        <error>Error message!!!</error>
+        <blog:GetBlogsResponse xmlns:blog="http://local.framesquared/blog" xmlns:author="http://local.framesquared/author">
+            <blog:Blog>
+                <blog:id>1</blog:id>
+                <blog:title>Total Blog Classic WildSide</blog:title>
+                <blog:body>Description...</blog:body>
+                <authors>
+                    <author:Author>
+                        <author:id>1</author:id>
+                        <author:name>Vladimir Harkonnen</author:name>
+                        <author:blog_id>1</author:blog_id>
+                    </author:Author>
+                    <author:Author>
+                        <author:id>2</author:id>
+                        <author:name>+44</author:name>
+                        <author:blog_id>1</author:blog_id>
+                    </author:Author>
+                    <author:Author>
+                        <author:id>3</author:id>
+                        <author:name>LetoAtreides</author:name>
+                        <author:blog_id>1</author:blog_id>
+                    </author:Author>
+                </authors>
+            </blog:Blog>
+            <blog:Blog>
+                <blog:id>2</blog:id>
+                <blog:title>The Kitchen Mill</blog:title>
+                <blog:body>Test Description</blog:body>
+                <authors>
+                    <author:Author>
+                        <author:id>4</author:id>
+                        <author:name>Other users</author:name>
+                        <author:blog_id>2</author:blog_id>
+                    </author:Author>
+                </authors>
+            </blog:Blog>
+        </blog:GetBlogsResponse>
+    </soap:Body>
+</soap:Envelope>
