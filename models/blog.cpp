@@ -318,18 +318,7 @@ TCriteria Blog::paramToCriteria(const QVariant &vm) {
 
         QMultiMap<QString, QVariant> filters = vm.toMap();
 
-        //for (QMap<QString, QVariant>::iterator xmlMap_it = filters.begin(); xmlMap_it != filters.end(); ++xmlMap_it) {
         for (auto &filter: filters) {
-//            tDebug("Key: %s ", filter.key().toStdString().c_str());
-//            QString p = (*filter).toMap().value("property").toString();
-//            QString v = (*filter).toMap().value("value").toString();
-//            QString o = (*filter).toMap().value("operator").toString();
-//
-//            tDebug("property: %s value: %s operation: %s",
-//                   p.toStdString().c_str(),
-//                   v.toStdString().c_str(),
-//                   o.toStdString().c_str()
-//            );
             if ((propertyIndex = propertyToIndex(filter.toMap().value("property").toString())) == -1) {
                 tDebug("invalid property");
                 continue;
@@ -353,15 +342,7 @@ QList<QPair<QString, Tf::SortOrder>> Blog::paramToSortOrder(const QVariant &sort
         tDebug("QMetaType::QVariantMap");
         QMultiMap<QString, QVariant> sortOrders = sortOrdersParam.toMap();
 
-        //for (QMap<QString, QVariant>::iterator xmlMap_it = sortOrders.begin(); xmlMap_it != sortOrders.end(); ++xmlMap_it) {
         for (auto &sortOrder: sortOrders) {
-//            tDebug("Key: %s ", sortOrder.key().toStdString().c_str());
-//            QString p = (*sortOrder).toMap().value("property").toString();
-//            QString o = (*sortOrder).toMap().value("order").toString();
-//            tDebug("property: %s order: %s",
-//                   p.toStdString().c_str(),
-//                   o.toStdString().c_str()
-//            );
             QString sortColumn = propertyToColumn(sortOrder.toMap().value("property").toString());
             Tf::SortOrder sortDirection = Blog::sortOrder(sortOrder.toMap().value("order").toString());
             sortColumns.append(QPair<QString, Tf::SortOrder>(sortColumn, sortDirection));
@@ -378,28 +359,6 @@ QString Blog::variableName() const {
 QString Blog::objectName() const {
     return QString("Blog");
 }
-
-//QString *Blog::tableNameToVariableName() const
-//{
-//    static QString *pointer;
-//    if (!pointer) {
-//        pointer = new QString(fieldNameToVariableName(d->tableName()));
-//    }
-//    return pointer;
-//}
-//
-//QString *Blog::tableNameToObjectName() const
-//{
-//    static QString *pointer;
-//    if (!pointer) {
-//        pointer = new QString(fieldNameToVariableName(d->tableName()));
-//    }
-//
-//    if (!pointer->isEmpty()) {
-//        (*pointer)[0] = (*pointer)[0].toUpper();
-//    }
-//    return pointer;
-//}
 
 int Blog::propertyToIndex(const QString &propertyName) {
     static QMap<QString, int> map{
@@ -453,26 +412,6 @@ QVector<QString> *Blog::variableNames() const
     };
     return &vector;
 }
-
-//QVector<QString> *Blog::variableNames() const
-//{
-//    static QVector<QString> *pointer;
-//    if (!pointer) {
-//        pointer = new QVector<QString>;
-//        const QMetaObject *metaObj = modelData()->metaObject();
-//        pointer->fill(nullptr, modelData()->metaObject()->propertyCount());
-//
-//        for (int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i) {
-//            QString n(metaObj->property(i).name());
-//
-//            if (!n.isEmpty()) {
-//                (*pointer)[i] = *tableNameToVariableName() + ":" + fieldNameToVariableName(n);
-//                tDebug("%d: %s",i, (*pointer)[i].toStdString().c_str());
-//            }
-//        }
-//    }
-//    return pointer;
-//}
 
 TSql::ComparisonOperator Blog::comparisonOperator(const QString &op) {
     static QMap<QString, TSql::ComparisonOperator> map{
